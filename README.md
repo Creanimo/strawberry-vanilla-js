@@ -5,11 +5,14 @@ UI components using vanilla javascript
 
 * this guide assumes you are using an npm project
 * mustache
+* dotenv
 
 From the root of the npm project:
 
 ```bash
 npm install mustache
+npm install dotenv
+npm install rollup-plugin-dotenv
 ```
 
 # Install
