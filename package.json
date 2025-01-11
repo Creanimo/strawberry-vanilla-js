@@ -1,0 +1,27 @@
+{
+  "name": "strawberry-vanilla-js-ui",
+  "version": "1.0.0",
+  "description": "UI components using vanilla javascript",
+  "main": "demo.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Creanimo/strawberry-vanilla-js.git"
+  },
+  "author": "Ferdinand Engländer",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Creanimo/strawberry-vanilla-js/issues"
+  },
+  "homepage": "https://github.com/Creanimo/strawberry-vanilla-js#readme",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "mustache": "^4.2.0",
+    "rollup": "^4.30.1"
+  },
+  "devDependencies": {
+    "rollup-plugin-dotenv": "^0.5.1"
+  }
+}
