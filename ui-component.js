@@ -1,10 +1,12 @@
 import Mustache from "mustache";
 import { htmlStringToElement } from "./tools/htmlStringToElement.js";
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-const svUiComponentDir = import.meta.url;
-console.log(svUiComponentDir);
+fetch('./config.json')
+    .then(response => response.json)
+    .then(data => {
+        const template_path = data.templatePath;
+    })
+    .catch(error => console.error('Error loading config for Strawberry Vanilla UI:', error));
 
 /**
  * Base class for UI components.

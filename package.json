@@ -18,8 +18,10 @@
   "homepage": "https://github.com/Creanimo/strawberry-vanilla-js#readme",
   "dependencies": {
     "dotenv": "^16.4.7",
+    "http-server": "^14.1.1",
     "mustache": "^4.2.0",
-    "rollup": "^4.30.1"
+    "rollup": "^4.30.1",
+    "sass": "^1.83.4"
   },
   "devDependencies": {
     "rollup-plugin-dotenv": "^0.5.1"
