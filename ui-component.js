@@ -20,7 +20,7 @@ class UiComponent {
     constructor(id, label, name = "ui-component") {
         this.id = id;
         this.label = label;
-        this.name = name
+        ths.name = name
     }
 
     /**
@@ -77,4 +77,9 @@ class UiComponent {
     }
 }
 
+function name(params) {
+   
+}
+
+const x = ;
 export { UiComponent };

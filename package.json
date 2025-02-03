@@ -2,8 +2,9 @@
   "name": "strawberry-vanilla-js-ui",
   "version": "1.0.0",
   "description": "UI components using vanilla javascript",
-  "main": "demo.js",
+  "main": "demo.mjs",
   "scripts": {
+    "demo": "http-server -p 0 -c-1",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -11,7 +12,7 @@
     "url": "git+https://github.com/Creanimo/strawberry-vanilla-js.git"
   },
   "author": "Ferdinand Engländer",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Creanimo/strawberry-vanilla-js/issues"
   },

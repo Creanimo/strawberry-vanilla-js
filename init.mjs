@@ -1,6 +1,20 @@
-fetch('./config.json')
-    .then(response => response.json)
-    .then(data => {
-        const template_path = data.templatePath;
-    })
-    .catch(error => console.error('Error loading config for Strawberry Vanilla UI:', error));
+let config = null;
+
+async function loadConfig() {
+    if (!config) {
+        try {
+            const response = await fetch('./config.json');
+            config = await response.json();
+        } catch (error) {
+            console.error('Error loading config:', error);
+        }
+    }
+    return config;
+}
+
+function getConfig() {
+    return config;
+}
+
+export { loadConfig, getConfig };
+
