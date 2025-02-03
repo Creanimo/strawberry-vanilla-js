@@ -6,7 +6,7 @@ async function loadConfig() {
             const response = await fetch('./config.json');
             config = await response.json();
         } catch (error) {
-            console.error('Error loading config:', error);
+            // console.error('Error loading config:', error);
         }
     }
     return config;

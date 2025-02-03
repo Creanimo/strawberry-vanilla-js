@@ -5,7 +5,7 @@
   "main": "demo.mjs",
   "scripts": {
     "demo": "http-server -p 0 -c-1",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -19,12 +19,14 @@
   "homepage": "https://github.com/Creanimo/strawberry-vanilla-js#readme",
   "dependencies": {
     "dotenv": "^16.4.7",
-    "http-server": "^14.1.1",
     "mustache": "^4.2.0",
-    "rollup": "^4.30.1",
     "sass": "^1.83.4"
   },
   "devDependencies": {
-    "rollup-plugin-dotenv": "^0.5.1"
+    "chai": "^5.1.2",
+    "http-server": "^14.1.1",
+    "mocha": "^11.1.0",
+    "sinon": "^19.0.2",
+    "winston": "^3.17.0"
   }
 }

@@ -1,3 +1,4 @@
 {
-    "rooPath": "./"
+    "rooPath": "./",
+    "loggingLevel": "info"
 }
