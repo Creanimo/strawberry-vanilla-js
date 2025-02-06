@@ -1,4 +1,4 @@
 {
-    "rooPath": "./",
+    "templatePath": "./templates/",
     "loggingLevel": "info"
 }

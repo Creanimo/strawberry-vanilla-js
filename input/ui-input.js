@@ -9,11 +9,14 @@ class UiInput extends UiComponent {
      * @param {*} name 
      * @param {Function} callOnBlur 
      */
-    constructor(id, label, value, name = "ui-input", callOnBlur = (() => { return undefined; }), callFormCollect = (() => { return undefined; })) {
+    constructor(id,
+                label,
+                value,
+                name = "ui-input",
+                callOnBlur = (() => { return undefined; })) {
         super(id, label, name)
         this.value = value;
         this.callOnBlur = callOnBlur;
-        this.callFormCollect = callFormCollect;
         this.eventValueUpdate = new Event(`${id}_value-update`);
     }
 
@@ -26,7 +29,7 @@ class UiInput extends UiComponent {
 
     async render(targetNode) {
         await super.render(targetNode);
-        // await this.setEventListeners();
+        await this.setEventListeners();
     }
 
     async setEventListeners() {
@@ -35,8 +38,7 @@ class UiInput extends UiComponent {
         const onBlur = () => {
             this.value = inputElement.value;
             this.callOnBlur();
-            this.callFormCollect();
-            console.log("Text UI Component now has value:" + this.value);
+            console.log(`Text UI Component now has value: ${this.value}`);
         }
         inputElement.addEventListener("blur", onBlur)
     }

@@ -1,12 +1,6 @@
 import Mustache from "mustache";
+import { loadConfig, getConfig } from "./init.mjs";
 import { htmlStringToElement } from "./tools/htmlStringToElement.js";
-
-fetch('./config.json')
-    .then(response => response.json)
-    .then(data => {
-        const template_path = data.templatePath;
-    })
-    .catch(error => console.error('Error loading config for Strawberry Vanilla UI:', error));
 
 /**
  * Base class for UI components.
@@ -20,7 +14,9 @@ class UiComponent {
     constructor(id, label, name = "ui-component") {
         this.id = id;
         this.label = label;
-        ths.name = name
+        this.name = name
+
+        this.setTemplatePath(getConfig().templatePath);
     }
 
     /**
@@ -39,9 +35,7 @@ class UiComponent {
      * Sets the template path for the component.
      * @param {string} path - The path to the template file.
      */
-    setTemplatePath(path) {
-        this.templatePath = path;
-    }
+    setTemplatePath(path) { this.templatePath = path; }
 
     /**
      * Renders the component using the specified template.
@@ -55,7 +49,7 @@ class UiComponent {
     async renderHTML() {
         const template = await this.#loadTemplate(this.templatePath);
         const renderProps = await this.getRenderProperties();
-        const htmlStr = await Mustache.render(template, renderProps); 
+        const htmlStr = Mustache.render(template, renderProps); 
         const renderedHTML = htmlStringToElement(htmlStr);
         
         return renderedHTML;
@@ -77,9 +71,4 @@ class UiComponent {
     }
 }
 
-function name(params) {
-   
-}
-
-const x = ;
 export { UiComponent };
