@@ -1,4 +1,4 @@
-import { UiComponent } from "../ui-component.js";
+import UiComponent from "../ui-component.mjs";
 
 class UiInput extends UiComponent {
     /**
@@ -44,4 +44,4 @@ class UiInput extends UiComponent {
     }
 }
 
-export { UiInput };
+export default UiInput;

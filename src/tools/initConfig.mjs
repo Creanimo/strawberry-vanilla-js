@@ -17,4 +17,3 @@ function getConfig() {
 }
 
 export { loadConfig, getConfig };
-

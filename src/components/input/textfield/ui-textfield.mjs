@@ -1,4 +1,4 @@
-import { UiInput } from "../ui-input.js";
+import UiInput from "../ui-input.mjs";
 
 class UiTextField extends UiInput {
     /**
@@ -19,4 +19,4 @@ class UiTextField extends UiInput {
     }
 }
 
-export { UiTextField };
+export default UiTextField;

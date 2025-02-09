@@ -5,7 +5,11 @@
   "main": "demo.mjs",
   "scripts": {
     "demo": "http-server -p 0 -c-1",
-    "test": "mocha"
+    "test": "mocha --recursive",
+    "clean:dist": "rm -rf dist && mkdir dist",
+    "copy:assets": "cp -r src/templates dist/ && cp -r src/css dist/",
+    "build:rollup": "rollup -c",
+    "build": "npm run clean:dist && npm run copy:assets && npm run build:rollup"
   },
   "repository": {
     "type": "git",
@@ -23,9 +27,13 @@
     "sass": "^1.83.4"
   },
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-terser": "^0.4.4",
     "chai": "^5.1.2",
     "http-server": "^14.1.1",
     "mocha": "^11.1.0",
+    "rollup": "^4.34.6",
+    "rollup-plugin-copy": "^3.5.0",
     "sinon": "^19.0.2",
     "winston": "^3.17.0"
   }

@@ -1,6 +1,6 @@
 import Mustache from "mustache";
-import { loadConfig, getConfig } from "./init.mjs";
-import { htmlStringToElement } from "./tools/htmlStringToElement.js";
+import { loadConfig, getConfig } from "../tools/initConfig.mjs";
+import { htmlStringToElement } from "../tools/htmlStringToElement.mjs";
 
 /**
  * Base class for UI components.
@@ -71,4 +71,4 @@ class UiComponent {
     }
 }
 
-export { UiComponent };
+export default UiComponent;
