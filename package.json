@@ -2,14 +2,16 @@
   "name": "strawberry-vanilla-js-ui",
   "version": "1.0.0",
   "description": "UI components using vanilla javascript",
-  "main": "demo.mjs",
+  "main": "demo.js",
+  "type": "module",
   "scripts": {
-    "demo": "http-server -p 0 -c-1",
+    "demo": "http-server -c-1",
     "test": "mocha --recursive",
     "clean:dist": "rm -rf dist && mkdir dist",
     "copy:assets": "cp -r src/templates dist/ && cp -r src/css dist/",
+    "copy:config": "cp src/sv-ui-config.json dist/sv-ui-config.json",
     "build:rollup": "rollup -c",
-    "build": "npm run clean:dist && npm run copy:assets && npm run build:rollup"
+    "build": "npm run clean:dist && npm run copy:assets && npm run copy:config && npm run build:rollup"
   },
   "repository": {
     "type": "git",

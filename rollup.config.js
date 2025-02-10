@@ -2,7 +2,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 
 export default {
-  input: './src/index.mjs',
+  input: './src/index.js',
   output: [
     {
       file: 'dist/index.esm.js',
@@ -10,7 +10,6 @@ export default {
       sourcemap: true
     }
   ],
-  external: ['mustache'],
-  plugins: [resolve(),
-        terser()]
+  // external: ['mustache'],
+  plugins: [resolve()]
 };

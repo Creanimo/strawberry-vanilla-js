@@ -1,4 +1,4 @@
-import UiComponent from "../ui-component.mjs";
+import UiComponent from "../ui-component.js";
 
 class UiInput extends UiComponent {
     /**
@@ -12,9 +12,9 @@ class UiInput extends UiComponent {
     constructor(id,
                 label,
                 value,
-                name = "ui-input",
+                type = "ui-input",
                 callOnBlur = (() => { return undefined; })) {
-        super(id, label, name)
+        super(id, label, type)
         this.value = value;
         this.callOnBlur = callOnBlur;
         this.eventValueUpdate = new Event(`${id}_value-update`);

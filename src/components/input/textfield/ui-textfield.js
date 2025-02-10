@@ -1,4 +1,4 @@
-import UiInput from "../ui-input.mjs";
+import UiInput from "../ui-input.js";
 
 class UiTextField extends UiInput {
     /**
@@ -11,11 +11,10 @@ class UiTextField extends UiInput {
     constructor(id,
                 label,
                 value,
-                name = "ui-textfield",
+                type = "ui-textfield",
                 callOnBlur = (() => { return undefined; })) {
-        super(id, label, value, name, callOnBlur);
+        super(id, label, value, type, callOnBlur);
         this.templatePath += 'input/textfield.html';
-        this.setTemplatePath(templatePath);
     }
 }
 

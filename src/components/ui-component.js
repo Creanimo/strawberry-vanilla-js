@@ -1,6 +1,6 @@
 import Mustache from "mustache";
-import { loadConfig, getConfig } from "../tools/initConfig.mjs";
-import { htmlStringToElement } from "../tools/htmlStringToElement.mjs";
+import { loadConfig, getConfig } from "../tools/initConfig.js";
+import { htmlStringToElement } from "../tools/htmlStringToElement.js";
 
 /**
  * Base class for UI components.
@@ -11,12 +11,12 @@ class UiComponent {
      * @param {string} id - The unique identifier for the component.
      * @param {string} label - The label for the component.
      */
-    constructor(id, label, name = "ui-component") {
+    constructor(id, label, type = "ui-component") {
         this.id = id;
         this.label = label;
-        this.name = name
+        this.type = type;
 
-        this.setTemplatePath(getConfig().templatePath);
+        this.templatePath = getConfig().templatePath;
     }
 
     /**
@@ -27,7 +27,7 @@ class UiComponent {
         return {
             id: this.id,
             label: this.label,
-            name: this.name,
+            type: this.type,
         };
     }
 
