@@ -1,45 +1,56 @@
-# strawberry-vanilla-js
-UI components using vanilla javascript
+# Strawberry Vanilla JS
 
-# Dependencies
+This UI framework uses vanilla ES6 JavaScript only (no React).
+It's still heavily work in progress at the moment.
 
-* this guide assumes you are using an npm project
-* mustache
-* dotenv
+## Demo
 
-From the root of the npm project:
+See all UI components in action by running the demo.
 
-```bash
-npm install mustache
-npm install dotenv
-npm install rollup-plugin-dotenv
-```
+### Dependencies
 
-# Install
+- npm
 
-CHANGE: Switched to dotenv for global path variable.
-
-Add with git subtree to desired path e.g.
+### How to start the demo
 
 ```bash
-git subtree add --prefix path/to/ui-components/strawberry-vanilla-js/ git@github.com:Creanimo/strawberry-vanilla-js.git main --squash
+npm install --save-dev
+npm run demo 
 ```
 
-Add your project's node_modules folder as a module folder for your packaging tool.
+Go to the localhost address shown in your browser.
+The demo has log level "info", so you can see debug and error messages in the console.
 
-For rollup this may look like this:
+## Use UI Components in your app
 
+- Add dist folder to your project.
+- Copy sv-ui-config.json next to your entry point (e.g. my-app.js),
+- open it and change templatePath, so it points to the templates/ folder.
+- Initialize config in the entry point of your app:
 ```js
-// rollup.config.js
-import resolve from '@rollup/plugin-node-resolve'; // make sure to add to npm
+import { loadConfig } from "./path-to-strawberry-vanilla-ui/index.esm.js";
 
-export default {
-    // ...
-    plugins: [
-        //...
-        resolve({
-            modulePaths: ['node_modules']
-        }),
-    ]
+loadConfig().then(() => {
+    // anything that uses the ui components
 }
+
 ```
+- Import components you want to use from index.esm.js
+
+## Developing
+
+Get all dependencies and tools for developing:
+
+```bash
+npm install --save-dev
+```
+
+### Build
+
+To create the dist folder (which is also used by the demo), run
+
+```bash
+npm run build
+```
+
+The clean:dist script uses "rm" to clear the dist folder, so it runs only on Linux.
