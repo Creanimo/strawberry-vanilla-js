@@ -1,4 +1,4 @@
 {
-"templatePath": "./dist/templates/",
+"templateRoot": "./dist/templates/",
 "loggingLevel": "info"
 }

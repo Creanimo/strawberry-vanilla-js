@@ -1,5 +1,5 @@
 import Mustache from "mustache";
-import { loadConfig, getConfig } from "../tools/initConfig.js";
+import { getConfig } from "../tools/initConfig.js";
 import { htmlStringToElement } from "../tools/htmlStringToElement.js";
 
 /**
@@ -11,12 +11,14 @@ class UiComponent {
      * @param {string} id - The unique identifier for the component.
      * @param {string} label - The label for the component.
      */
-    constructor(id, label, type = "ui-component") {
+    constructor({id, label, type = "ui-component", fetchFunction = null}) {
         this.id = id;
         this.label = label;
         this.type = type;
+        this.loading = false;
+        this.fetchFunction = fetchFunction;
 
-        this.templatePath = getConfig().templatePath;
+        this.templatePath = `${getConfig().templateRoot}mytemplate.html`;
     }
 
     /**
@@ -32,22 +34,24 @@ class UiComponent {
     }
 
     /**
-     * Sets the template path for the component.
-     * @param {string} path - The path to the template file.
-     */
-    setTemplatePath(path) { this.templatePath = path; }
-
-    /**
      * Renders the component using the specified template.
      * @returns {Promise<Node>} The rendered HTML string.
      */
     async render(targetNode) {
-        const renderedHtml = await this.renderHTML();
+        this.setLoading = true;
+        const loadingTemplate = `${getConfig().templateRoot}loading.html`
+        const placeholderTemplate = await this.#loadTemplate(loadingTemplate);
+        const placeholderHTML = await this.renderHTML(placeholderTemplate);
+        targetNode.appendChild(placeholderHTML)
+
+        this.fetchData(this.fetchFunction);
+
+        const componentTemplate = await this.#loadTemplate(this.templatePath);
+        const renderedHtml = await this.renderHTML(componentTemplate);
         targetNode.appendChild(renderedHtml);
     }
 
-    async renderHTML() {
-        const template = await this.#loadTemplate(this.templatePath);
+    async renderHTML(template) {
         const renderProps = await this.getRenderProperties();
         const htmlStr = Mustache.render(template, renderProps); 
         const renderedHTML = htmlStringToElement(htmlStr);
@@ -68,6 +72,22 @@ class UiComponent {
             throw new Error(`Failed to load template: ${templatePath}`);
         }
         return await response.text();
+    }
+
+    async fetchData(fetchFunction) {
+        if (!fetchFunction) {
+            return
+        }
+        try {
+            const newData = await fetchFunction();
+            if (typeof newData === "object" && newData !== null) {
+                Object.assign(this, newData);
+            } else {
+                console.warn("fetchFunction must return an object");
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+        }
     }
 }
 
