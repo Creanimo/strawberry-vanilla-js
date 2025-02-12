@@ -14,7 +14,12 @@ class UiComponent {
      * @param {string} [options.type="ui-component"] - The type of the component.
      * @param {() => Promise<Object>} [options.fetchFunction=null] - An optional async function to fetch data.
      */
-    constructor({ id, label, type = "ui-component", fetchFunction = null }) {
+    constructor({
+        id,
+        label,
+        type = "ui-component",
+        fetchFunction = null
+    }) {
         /** @type {string} */
         this.id = id;
 

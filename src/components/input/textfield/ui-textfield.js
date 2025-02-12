@@ -1,3 +1,4 @@
+import { getConfig } from "../../../tools/initConfig.js";
 import UiInput from "../ui-input.js";
 
 class UiTextField extends UiInput {
@@ -8,13 +9,14 @@ class UiTextField extends UiInput {
      * @param {string} value 
      * @param {string} templatePath - The path to the template file.
      */
-    constructor(id,
+    constructor({id,
                 label,
                 value,
                 type = "ui-textfield",
-                callOnBlur = (() => { return undefined; })) {
-        super(id, label, value, type, callOnBlur);
-        this.templatePath += 'input/textfield.html';
+                callOnBlur = () => { return undefined; }
+    }) {
+        super({id, label, value, type, callOnBlur});
+        this.templatePath = `${getConfig().templateRoot}input/textfield.html`;
     }
 }
 

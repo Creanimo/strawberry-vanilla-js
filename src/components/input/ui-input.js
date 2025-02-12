@@ -9,12 +9,15 @@ class UiInput extends UiComponent {
      * @param {*} name 
      * @param {Function} callOnBlur 
      */
-    constructor(id,
-                label,
-                value,
-                type = "ui-input",
-                callOnBlur = (() => { return undefined; })) {
-        super(id, label, type)
+    constructor({
+        id,
+        label,
+        value,
+        type = "ui-input",
+        fetchFunction = null,
+        callOnBlur = () => { return undefined; }
+    }) {
+        super({id, label, type, fetchFunction})
         this.value = value;
         this.callOnBlur = callOnBlur;
         this.eventValueUpdate = new Event(`${id}_value-update`);
@@ -38,7 +41,7 @@ class UiInput extends UiComponent {
         const onBlur = () => {
             this.value = inputElement.value;
             this.callOnBlur();
-            console.log(`Text UI Component now has value: ${this.value}`);
+            console.log(`Input UI Component now has value: ${this.value}`);
         }
         inputElement.addEventListener("blur", onBlur)
     }

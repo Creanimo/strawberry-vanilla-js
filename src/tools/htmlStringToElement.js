@@ -3,7 +3,7 @@
  * @param {string} htmlString 
  * @returns {Node}
  */
-async function htmlStringToElement(htmlString) {
+function htmlStringToElement(htmlString) {
     const template = document.createElement('template');
     template.innerHTML = htmlString.trim();
     const element = template.content.firstChild;

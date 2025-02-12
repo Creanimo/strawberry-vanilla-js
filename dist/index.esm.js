@@ -784,7 +784,7 @@ mustache.Writer = Writer;
  * @param {string} htmlString 
  * @returns {Node}
  */
-async function htmlStringToElement(htmlString) {
+function htmlStringToElement(htmlString) {
     const template = document.createElement('template');
     template.innerHTML = htmlString.trim();
     const element = template.content.firstChild;
@@ -797,20 +797,43 @@ async function htmlStringToElement(htmlString) {
 class UiComponent {
     /**
      * Creates an instance of UiComponent.
-     * @param {string} id - The unique identifier for the component.
-     * @param {string} label - The label for the component.
+     * @param {Object} options - Configuration options for the UI component.
+     * @param {string} options.id - The unique identifier for the component.
+     * @param {string} options.label - The label for the component.
+     * @param {string} [options.type="ui-component"] - The type of the component.
+     * @param {() => Promise<Object>} [options.fetchFunction=null] - An optional async function to fetch data.
      */
-    constructor(id, label, type = "ui-component") {
+    constructor({
+        id,
+        label,
+        type = "ui-component",
+        fetchFunction = null
+    }) {
+        /** @type {string} */
         this.id = id;
+
+        /** @type {string} */
         this.label = label;
+
+        /** @type {string} */
         this.type = type;
 
-        this.templatePath = getConfig().templatePath;
+        /** @type {boolean} */
+        this.loading = false;
+
+        /** @type {(() => Promise<Object>) | null} */
+        this.fetchFunction = fetchFunction;
+
+        /** @type {HTMLElement | null} */
+        this.targetNode = null;
+
+        /** @type {string} */
+        this.templatePath = `${getConfig().templateRoot}mytemplate.html`;
     }
 
     /**
-     * Gets the properties for rendering the component.
-     * @returns {Object} The properties for rendering.
+     * Returns an object containing the component's properties for rendering.
+     * @returns {Object} The properties used in the Mustache template.
      */
     getRenderProperties() {
         return {
@@ -821,33 +844,49 @@ class UiComponent {
     }
 
     /**
-     * Sets the template path for the component.
-     * @param {string} path - The path to the template file.
+     * Renders the UI component inside the specified target node.
+     * @param {HTMLElement} [targetNode=this.targetNode] - The target HTML element where the component should be rendered.
+     * @returns {Promise<void>}
+     * @throws {Error} If targetNode is not provided on the first render.
      */
-    setTemplatePath(path) { this.templatePath = path; }
+    async render(targetNode = this.targetNode) {
+        if (!targetNode) throw new Error("Target node is required for the first render.");
+        this.targetNode = targetNode;
+        this.loading = true;
 
-    /**
-     * Renders the component using the specified template.
-     * @returns {Promise<Node>} The rendered HTML string.
-     */
-    async render(targetNode) {
-        const renderedHtml = await this.renderHTML();
-        targetNode.appendChild(renderedHtml);
+        // Clear previous content and show loading state
+        targetNode.innerHTML = "";
+        const loadingTemplate = await this.#loadTemplate(`${getConfig().templateRoot}loading.html`);
+        targetNode.appendChild(this.renderHTML(loadingTemplate));
+
+        // Fetch data if needed
+        if (this.fetchFunction) {
+            await this.fetchData(this.fetchFunction);
+        }
+
+        // Render the actual component
+        const componentTemplate = await this.#loadTemplate(this.templatePath);
+        targetNode.innerHTML = "";
+        targetNode.appendChild(this.renderHTML(componentTemplate));
+
+        this.loading = false;
     }
 
-    async renderHTML() {
-        const template = await this.#loadTemplate(this.templatePath);
-        const renderProps = await this.getRenderProperties();
-        const htmlStr = mustache.render(template, renderProps); 
-        const renderedHTML = htmlStringToElement(htmlStr);
-        
-        return renderedHTML;
+    /**
+     * Renders an HTML template with Mustache and returns the resulting element.
+     * @param {string} template - The Mustache template string.
+     * @returns {Node} The rendered HTML element.
+     */
+    renderHTML(template) {
+        const renderProps = this.getRenderProperties();
+        const htmlStr = mustache.render(template, renderProps);
+        return htmlStringToElement(htmlStr);
     }
 
     /**
-     * Loads the template from the specified path.
+     * Loads an HTML template from a given file path.
      * @param {string} templatePath - The path to the template file.
-     * @returns {Promise<string>} The template content.
+     * @returns {Promise<string>} The template content as a string.
      * @throws {Error} If the template cannot be loaded.
      * @private
      */
@@ -857,6 +896,27 @@ class UiComponent {
             throw new Error(`Failed to load template: ${templatePath}`);
         }
         return await response.text();
+    }
+
+    /**
+     * Fetches data using the provided fetch function and updates the component properties.
+     * After fetching, it re-renders the component to reflect the new data.
+     * @param {() => Promise<Object>} fetchFunction - The function to fetch data.
+     * @returns {Promise<void>}
+     */
+    async fetchData(fetchFunction) {
+        if (!fetchFunction) return;
+
+        try {
+            const newData = await fetchFunction();
+            if (typeof newData === "object" && newData !== null) {
+                Object.assign(this, newData);
+            } else {
+                console.warn("fetchFunction must return an object.");
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+        }
     }
 }
 
@@ -869,12 +929,15 @@ class UiInput extends UiComponent {
      * @param {*} name 
      * @param {Function} callOnBlur 
      */
-    constructor(id,
-                label,
-                value,
-                type = "ui-input",
-                callOnBlur = (() => { return undefined; })) {
-        super(id, label, type);
+    constructor({
+        id,
+        label,
+        value,
+        type = "ui-input",
+        fetchFunction = null,
+        callOnBlur = () => { return undefined; }
+    }) {
+        super({id, label, type, fetchFunction});
         this.value = value;
         this.callOnBlur = callOnBlur;
         this.eventValueUpdate = new Event(`${id}_value-update`);
@@ -898,7 +961,7 @@ class UiInput extends UiComponent {
         const onBlur = () => {
             this.value = inputElement.value;
             this.callOnBlur();
-            console.log(`Text UI Component now has value: ${this.value}`);
+            console.log(`Input UI Component now has value: ${this.value}`);
         };
         inputElement.addEventListener("blur", onBlur);
     }
@@ -912,13 +975,14 @@ class UiTextField extends UiInput {
      * @param {string} value 
      * @param {string} templatePath - The path to the template file.
      */
-    constructor(id,
+    constructor({id,
                 label,
                 value,
                 type = "ui-textfield",
-                callOnBlur = (() => { return undefined; })) {
-        super(id, label, value, type, callOnBlur);
-        this.templatePath += 'input/textfield.html';
+                callOnBlur = () => { return undefined; }
+    }) {
+        super({id, label, value, type, callOnBlur});
+        this.templatePath = `${getConfig().templateRoot}input/textfield.html`;
     }
 }
 
