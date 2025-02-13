@@ -36,7 +36,7 @@ class UiComponent {
         this.fetchFunction = fetchFunction;
 
         /** @type {HTMLElement | null} */
-        this.targetNode = null;
+        this.componentNode = null;
 
         /** @type {string} */
         this.templatePath = `${getConfig().templateRoot}mytemplate.html`;
@@ -55,20 +55,42 @@ class UiComponent {
     }
 
     /**
-     * Renders the UI component inside the specified target node.
-     * @param {HTMLElement} [targetNode=this.targetNode] - The target HTML element where the component should be rendered.
-     * @returns {Promise<void>}
-     * @throws {Error} If targetNode is not provided on the first render.
+     * Renders UI components and replaces content of given htmlNode
+     * @param {HTMLElement} htmlNode - the target HTMLElement in which the rendered content will be placed
+     * @param {string} htmlTemplate - path relative to the entry point; should use getConfig().templateRoot
+     * @param {Object.<string, string>} propCollection - which placeholders to replace with which values
+     * @param {Object[]} childrenCollection - html ids where to place rendered child ui component(s)
+     * @param {string} childrenCollection[].id of a div in the html template
+     * @param {UiComponent} childrenCollection[].component to place inside the div
+     * @param {null | (() => Promise<Object>)} fetchFunction may override propCollection if not null
+     * @param {null | ((htmlNode) => Promise<void>)} afterRenderFunction e.g. to attach event listeners
      */
-    async render(targetNode = this.targetNode) {
-        if (!targetNode) throw new Error("Target node is required for the first render.");
-        this.targetNode = targetNode;
+    renderToNode(
+        htmlNode = this.componentNode,
+        htmlTemplate = this.templatePath,
+        propCollection = this.getRenderProperties,
+        childrenCollection = null,
+        fetchFunction = this.fetchFunction,
+        afterRenderFunction = null
+    ) {
+
+    }
+
+    /**
+     * Renders the UI component inside the specified target node.
+     * @param {HTMLElement} [componentNode=this.componentNode] - The target HTML element where the component should be rendered.
+     * @returns {Promise<void>}
+     * @throws {Error} If componentNode is not provided on the first render.
+     */
+    async render(componentNode = this.componentNode) {
+        if (!componentNode) throw new Error("Target node is required for the first render.");
+        this.componentNode = componentNode;
         this.loading = true;
 
         // Clear previous content and show loading state
-        targetNode.innerHTML = "";
+        componentNode.innerHTML = "";
         const loadingTemplate = await this.#loadTemplate(`${getConfig().templateRoot}loading.html`);
-        targetNode.appendChild(this.renderHTML(loadingTemplate));
+        componentNode.appendChild(this.renderHTML(loadingTemplate));
 
         // Fetch data if needed
         if (this.fetchFunction) {
@@ -77,8 +99,8 @@ class UiComponent {
 
         // Render the actual component
         const componentTemplate = await this.#loadTemplate(this.templatePath);
-        targetNode.innerHTML = "";
-        targetNode.appendChild(this.renderHTML(componentTemplate));
+        componentNode.innerHTML = "";
+        componentNode.appendChild(this.renderHTML(componentTemplate));
 
         this.loading = false;
     }
