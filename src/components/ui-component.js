@@ -65,15 +65,41 @@ class UiComponent {
      * @param {null | (() => Promise<Object>)} fetchFunction may override propCollection if not null
      * @param {null | ((htmlNode) => Promise<void>)} afterRenderFunction e.g. to attach event listeners
      */
-    renderToNode(
+    async renderInNode(
         htmlNode = this.componentNode,
+        targetNode = null,
         htmlTemplate = this.templatePath,
-        propCollection = this.getRenderProperties,
+        propCollection = this.getRenderProperties(),
         childrenCollection = null,
         fetchFunction = this.fetchFunction,
         afterRenderFunction = null
     ) {
+        const loadingTemplate = await this.#loadTemplate(`${getConfig().templateRoot}loading.html`);
+        await this.renderTpl(htmlNode, loadingTemplate); 
 
+        if (targetNode && !targetNode.contains(htmlNode)) {
+            targetNode.appendChild(htmlNode);
+        }
+
+        let propCollectionToRender;
+        if (this.fetchFunction) {
+            propCollectionToRender = await this.fetchData(this.fetchFunction);
+        } else {
+            propCollectionToRender = propCollection;
+        }
+
+        // Render the actual component
+        const componentTemplate = await this.#loadTemplate(this.templatePath);
+        await this.renderTpl(htmlNode, componentTemplate, propCollectionToRender);
+
+        if (afterRenderFunction) afterRenderFunction();
+    }
+
+    async renderTpl(htmlNode, template, renderProps = {}) {
+        htmlNode.innerHTML = "";
+        const htmlStr = Mustache.render(template, renderProps);
+        const renderedNode = htmlStringToElement(htmlStr);
+        htmlNode.appendChild(renderedNode);
     }
 
     /**
@@ -82,39 +108,10 @@ class UiComponent {
      * @returns {Promise<void>}
      * @throws {Error} If componentNode is not provided on the first render.
      */
-    async render(componentNode = this.componentNode) {
-        if (!componentNode) throw new Error("Target node is required for the first render.");
-        this.componentNode = componentNode;
-        this.loading = true;
-
-        // Clear previous content and show loading state
-        componentNode.innerHTML = "";
-        const loadingTemplate = await this.#loadTemplate(`${getConfig().templateRoot}loading.html`);
-        componentNode.appendChild(this.renderHTML(loadingTemplate));
-
-        // Fetch data if needed
-        if (this.fetchFunction) {
-            await this.fetchData(this.fetchFunction);
+    async render() {
+        if (!this.componentNode) throw new Error("Target node is required for the first render.");
+        this.renderInNode();
         }
-
-        // Render the actual component
-        const componentTemplate = await this.#loadTemplate(this.templatePath);
-        componentNode.innerHTML = "";
-        componentNode.appendChild(this.renderHTML(componentTemplate));
-
-        this.loading = false;
-    }
-
-    /**
-     * Renders an HTML template with Mustache and returns the resulting element.
-     * @param {string} template - The Mustache template string.
-     * @returns {Node} The rendered HTML element.
-     */
-    renderHTML(template) {
-        const renderProps = this.getRenderProperties();
-        const htmlStr = Mustache.render(template, renderProps);
-        return htmlStringToElement(htmlStr);
-    }
 
     /**
      * Loads an HTML template from a given file path.
@@ -147,6 +144,7 @@ class UiComponent {
             } else {
                 console.warn("fetchFunction must return an object.");
             }
+            return newData;
         } catch (error) {
             console.error("Fetch error:", error);
         }
