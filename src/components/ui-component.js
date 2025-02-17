@@ -1,6 +1,6 @@
 import Mustache from "mustache";
 import { getConfig } from "../tools/initConfig.js";
-import { htmlStringToElement } from "../tools/htmlStringToElement.js";
+import { createId } from "../tools/createId.js";
 
 /**
  * Base class for UI components.
@@ -14,12 +14,7 @@ class UiComponent {
      * @param {string} [options.type="ui-component"] - The type of the component.
      * @param {() => Promise<Object>} [options.fetchFunction=null] - An optional async function to fetch data.
      */
-    constructor({
-        id,
-        label,
-        type = "ui-component",
-        fetchFunction = null
-    }) {
+    constructor({ label, id = null, dataName = label, fetchFunction = null }) {
         /** @type {string} */
         this.id = id;
 
@@ -27,7 +22,10 @@ class UiComponent {
         this.label = label;
 
         /** @type {string} */
-        this.type = type;
+        this.dataName = dataName;
+
+        /** @type {string} */
+        this.type = "sv-ui__component";
 
         /** @type {boolean} */
         this.loading = false;
@@ -38,8 +36,18 @@ class UiComponent {
         /** @type {HTMLElement | null} */
         this.componentNode = null;
 
+        /** @type {HTMLElement | null} */
+        this.targetNode = null;
+
         /** @type {string} */
         this.templatePath = `${getConfig().templateRoot}mytemplate.html`;
+
+        /**
+         * @type {Object[] | null} childrenCollection - html ids where to place rendered child ui component(s)
+         * @type {string} childrenCollection[].target class of a div in the parent's html template
+         * @type {UiComponent} childrenCollection[].component to place inside the div
+         */
+        this.childrenCollection = [];
     }
 
     /**
@@ -50,68 +58,92 @@ class UiComponent {
         return {
             id: this.id,
             label: this.label,
-            type: this.type,
+            dataName: this.dataName,
         };
     }
 
     /**
-     * Renders UI components and replaces content of given htmlNode
-     * @param {HTMLElement} htmlNode - the target HTMLElement in which the rendered content will be placed
-     * @param {string} htmlTemplate - path relative to the entry point; should use getConfig().templateRoot
-     * @param {Object.<string, string>} propCollection - which placeholders to replace with which values
-     * @param {Object[]} childrenCollection - html ids where to place rendered child ui component(s)
-     * @param {string} childrenCollection[].id of a div in the html template
-     * @param {UiComponent} childrenCollection[].component to place inside the div
-     * @param {null | (() => Promise<Object>)} fetchFunction may override propCollection if not null
-     * @param {null | ((htmlNode) => Promise<void>)} afterRenderFunction e.g. to attach event listeners
+     * @param {string} id
      */
-    async renderInNode(
-        htmlNode = this.componentNode,
-        targetNode = null,
-        htmlTemplate = this.templatePath,
-        propCollection = this.getRenderProperties(),
-        childrenCollection = null,
-        fetchFunction = this.fetchFunction,
-        afterRenderFunction = null
-    ) {
-        const loadingTemplate = await this.#loadTemplate(`${getConfig().templateRoot}loading.html`);
-        await this.renderTpl(htmlNode, loadingTemplate); 
 
-        if (targetNode && !targetNode.contains(htmlNode)) {
-            targetNode.appendChild(htmlNode);
+    set id(value) {
+        this._id = value || createId();
+    }
+
+    get id() {
+        return this._id;
+    }
+
+    /**
+     * @param {HTMLElement} node
+     */
+    set componentNode(node) {
+        this._componentNode = node || this.createContainer();
+    }
+
+    get componentNode() {
+        return this._componentNode;
+    }
+
+    createContainer() {
+        const container = document.createElement("div");
+        container.id = this.id;
+        container.classList.add(this.type);
+        return container;
+    }
+
+    /**
+     * @param {boolean} state
+     */
+    async setLoading(state) {
+        if (state) {
+            const loadingTemplate = await this.#loadTemplate(
+                `${getConfig().templateRoot}loading.html`,
+            );
+            await this.renderTpl(this.componentNode, loadingTemplate);
         }
+        this.loading = state;
+    }
+
+    /**
+     * Renders UI components and replaces content of given htmlNode
+     */
+    async render(targetNode) {
+        this.targetNode = targetNode;
+
+        this.setLoading(true);
+        this.targetNode.appendChild(this.componentNode);
 
         let propCollectionToRender;
         if (this.fetchFunction) {
             propCollectionToRender = await this.fetchData(this.fetchFunction);
         } else {
-            propCollectionToRender = propCollection;
+            propCollectionToRender = this.getRenderProperties();
         }
+
+        const tempNode = this.createContainer();
 
         // Render the actual component
         const componentTemplate = await this.#loadTemplate(this.templatePath);
-        await this.renderTpl(htmlNode, componentTemplate, propCollectionToRender);
+        await this.renderTpl(tempNode, componentTemplate, propCollectionToRender);
 
-        if (afterRenderFunction) afterRenderFunction();
+        if (this.childrenCollection) {
+            for (const child of this.childrenCollection) {
+                const childHtmlNode = child.component.componentNode;
+                const childTargetNode = tempNode.querySelector(`.${child.target}`);
+                childTargetNode.appendChild(childHtmlNode);
+            }
+        }
+
+        this.componentNode.replaceWith(tempNode);
+        this.setLoading(false);
     }
 
     async renderTpl(htmlNode, template, renderProps = {}) {
         htmlNode.innerHTML = "";
         const htmlStr = Mustache.render(template, renderProps);
-        const renderedNode = htmlStringToElement(htmlStr);
-        htmlNode.appendChild(renderedNode);
+        htmlNode.innerHTML = htmlStr;
     }
-
-    /**
-     * Renders the UI component inside the specified target node.
-     * @param {HTMLElement} [componentNode=this.componentNode] - The target HTML element where the component should be rendered.
-     * @returns {Promise<void>}
-     * @throws {Error} If componentNode is not provided on the first render.
-     */
-    async render() {
-        if (!this.componentNode) throw new Error("Target node is required for the first render.");
-        this.renderInNode();
-        }
 
     /**
      * Loads an HTML template from a given file path.
@@ -152,4 +184,3 @@ class UiComponent {
 }
 
 export default UiComponent;
-

@@ -1,3 +1,4 @@
+import { createId } from "../../tools/createId.js";
 import UiComponent from "../ui-component.js";
 
 class UiInput extends UiComponent {
@@ -12,15 +13,16 @@ class UiInput extends UiComponent {
     constructor({
         id,
         label,
+        dataName = label,
         value,
-        type = "ui-input",
         fetchFunction = null,
         callOnBlur = () => { return undefined; }
     }) {
-        super({id, label, type, fetchFunction})
+        super({id, label, dataName, fetchFunction})
+        this.type = "sv-ui__input"
         this.value = value;
         this.callOnBlur = callOnBlur;
-        this.eventValueUpdate = new Event(`${id}_value-update`);
+        this.textfieldId = createId();
     }
 
     getRenderProperties() {
@@ -36,7 +38,7 @@ class UiInput extends UiComponent {
     }
 
     async setEventListeners() {
-        const inputElement = document.getElementById(this.id);
+        const inputElement = document.getElementById(this.id).querySelector("input");
 
         const onBlur = () => {
             this.value = inputElement.value;

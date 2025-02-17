@@ -11,12 +11,20 @@ class UiTextField extends UiInput {
      */
     constructor({id,
                 label,
+                dataName = label,
                 value,
-                type = "ui-textfield",
                 callOnBlur = () => { return undefined; }
     }) {
-        super({id, label, value, type, callOnBlur});
+        super({id, label, dataName, value, callOnBlur});
+        this.type = "sv-ui__input-textfield"
         this.templatePath = `${getConfig().templateRoot}input/textfield.html`;
+    }
+
+    getRenderProperties() {
+       return {
+            ...super.getRenderProperties(),
+            textfieldId: this.textfieldId,
+        } 
     }
 }
 

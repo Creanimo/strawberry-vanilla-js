@@ -16,6 +16,13 @@ function getConfig() {
     return config;
 }
 
+const createId = (length = 8) => {
+  return [...crypto.getRandomValues(new Uint8Array(length))]
+    .map(byte => byte.toString(36).padStart(2, '0'))
+    .join('')
+    .slice(0, length);
+};
+
 /*!
  * mustache.js - Logic-less {{mustache}} templates with JavaScript
  * http://github.com/janl/mustache.js
@@ -780,18 +787,6 @@ mustache.Context = Context;
 mustache.Writer = Writer;
 
 /**
- * Convert a html string to DOM
- * @param {string} htmlString 
- * @returns {Node}
- */
-function htmlStringToElement(htmlString) {
-    const template = document.createElement('template');
-    template.innerHTML = htmlString.trim();
-    const element = template.content.firstChild;
-    return element;
-}
-
-/**
  * Base class for UI components.
  */
 class UiComponent {
@@ -803,12 +798,7 @@ class UiComponent {
      * @param {string} [options.type="ui-component"] - The type of the component.
      * @param {() => Promise<Object>} [options.fetchFunction=null] - An optional async function to fetch data.
      */
-    constructor({
-        id,
-        label,
-        type = "ui-component",
-        fetchFunction = null
-    }) {
+    constructor({ label, id = null, dataName = label, fetchFunction = null }) {
         /** @type {string} */
         this.id = id;
 
@@ -816,7 +806,10 @@ class UiComponent {
         this.label = label;
 
         /** @type {string} */
-        this.type = type;
+        this.dataName = dataName;
+
+        /** @type {string} */
+        this.type = "sv-ui__component";
 
         /** @type {boolean} */
         this.loading = false;
@@ -825,10 +818,20 @@ class UiComponent {
         this.fetchFunction = fetchFunction;
 
         /** @type {HTMLElement | null} */
+        this.componentNode = null;
+
+        /** @type {HTMLElement | null} */
         this.targetNode = null;
 
         /** @type {string} */
         this.templatePath = `${getConfig().templateRoot}mytemplate.html`;
+
+        /**
+         * @type {Object[] | null} childrenCollection - html ids where to place rendered child ui component(s)
+         * @type {string} childrenCollection[].target class of a div in the parent's html template
+         * @type {UiComponent} childrenCollection[].component to place inside the div
+         */
+        this.childrenCollection = [];
     }
 
     /**
@@ -839,48 +842,91 @@ class UiComponent {
         return {
             id: this.id,
             label: this.label,
-            type: this.type,
+            dataName: this.dataName,
         };
     }
 
     /**
-     * Renders the UI component inside the specified target node.
-     * @param {HTMLElement} [targetNode=this.targetNode] - The target HTML element where the component should be rendered.
-     * @returns {Promise<void>}
-     * @throws {Error} If targetNode is not provided on the first render.
+     * @param {string} id
      */
-    async render(targetNode = this.targetNode) {
-        if (!targetNode) throw new Error("Target node is required for the first render.");
-        this.targetNode = targetNode;
-        this.loading = true;
 
-        // Clear previous content and show loading state
-        targetNode.innerHTML = "";
-        const loadingTemplate = await this.#loadTemplate(`${getConfig().templateRoot}loading.html`);
-        targetNode.appendChild(this.renderHTML(loadingTemplate));
+    set id(value) {
+        this._id = value || createId();
+    }
 
-        // Fetch data if needed
-        if (this.fetchFunction) {
-            await this.fetchData(this.fetchFunction);
-        }
-
-        // Render the actual component
-        const componentTemplate = await this.#loadTemplate(this.templatePath);
-        targetNode.innerHTML = "";
-        targetNode.appendChild(this.renderHTML(componentTemplate));
-
-        this.loading = false;
+    get id() {
+        return this._id;
     }
 
     /**
-     * Renders an HTML template with Mustache and returns the resulting element.
-     * @param {string} template - The Mustache template string.
-     * @returns {Node} The rendered HTML element.
+     * @param {HTMLElement} node
      */
-    renderHTML(template) {
-        const renderProps = this.getRenderProperties();
+    set componentNode(node) {
+        this._componentNode = node || this.createContainer();
+    }
+
+    get componentNode() {
+        return this._componentNode;
+    }
+
+    createContainer() {
+        const container = document.createElement("div");
+        container.id = this.id;
+        container.classList.add(this.type);
+        return container;
+    }
+
+    /**
+     * @param {boolean} state
+     */
+    async setLoading(state) {
+        if (state) {
+            const loadingTemplate = await this.#loadTemplate(
+                `${getConfig().templateRoot}loading.html`,
+            );
+            await this.renderTpl(this.componentNode, loadingTemplate);
+        }
+        this.loading = state;
+    }
+
+    /**
+     * Renders UI components and replaces content of given htmlNode
+     */
+    async render(targetNode) {
+        this.targetNode = targetNode;
+
+        this.setLoading(true);
+        this.targetNode.appendChild(this.componentNode);
+
+        let propCollectionToRender;
+        if (this.fetchFunction) {
+            propCollectionToRender = await this.fetchData(this.fetchFunction);
+        } else {
+            propCollectionToRender = this.getRenderProperties();
+        }
+
+        const tempNode = this.createContainer();
+
+        // Render the actual component
+        const componentTemplate = await this.#loadTemplate(this.templatePath);
+        await this.renderTpl(tempNode, componentTemplate, propCollectionToRender);
+
+        if (this.childrenCollection) {
+            for (const child of this.childrenCollection) {
+                const childHtmlNode = child.component.componentNode;
+                const childTargetNode = tempNode.querySelector(`.${child.target}`);
+                childTargetNode.appendChild(childHtmlNode);
+            }
+        }
+
+        this.componentNode.replaceWith(tempNode);
+        this.setLoading(false);
+    }
+
+    async renderTpl(htmlNode, template, renderProps = {}) {
+        htmlNode.innerHTML = "";
         const htmlStr = mustache.render(template, renderProps);
-        return htmlStringToElement(htmlStr);
+        htmlNode.innerHTML = htmlStr;
     }
 
     /**
@@ -914,6 +960,7 @@ class UiComponent {
             } else {
                 console.warn("fetchFunction must return an object.");
             }
+            return newData;
         } catch (error) {
             console.error("Fetch error:", error);
         }
@@ -932,15 +979,16 @@ class UiInput extends UiComponent {
     constructor({
         id,
         label,
+        dataName = label,
         value,
-        type = "ui-input",
         fetchFunction = null,
         callOnBlur = () => { return undefined; }
     }) {
-        super({id, label, type, fetchFunction});
+        super({id, label, dataName, fetchFunction});
+        this.type = "sv-ui__input";
         this.value = value;
         this.callOnBlur = callOnBlur;
-        this.eventValueUpdate = new Event(`${id}_value-update`);
+        this.textfieldId = createId();
     }
 
     getRenderProperties() {
@@ -956,7 +1004,7 @@ class UiInput extends UiComponent {
     }
 
     async setEventListeners() {
-        const inputElement = document.getElementById(this.id);
+        const inputElement = document.getElementById(this.id).querySelector("input");
 
         const onBlur = () => {
             this.value = inputElement.value;
@@ -977,12 +1025,20 @@ class UiTextField extends UiInput {
      */
     constructor({id,
                 label,
+                dataName = label,
                 value,
-                type = "ui-textfield",
                 callOnBlur = () => { return undefined; }
     }) {
-        super({id, label, value, type, callOnBlur});
+        super({id, label, dataName, value, callOnBlur});
+        this.type = "sv-ui__input-textfield";
         this.templatePath = `${getConfig().templateRoot}input/textfield.html`;
+    }
+
+    getRenderProperties() {
+       return {
+            ...super.getRenderProperties(),
+            textfieldId: this.textfieldId,
+        } 
     }
 }
 
