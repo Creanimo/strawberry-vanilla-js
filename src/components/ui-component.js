@@ -43,11 +43,18 @@ class UiComponent {
         this.templatePath = `${getConfig().templateRoot}mytemplate.html`;
 
         /**
-         * @type {Object[] | null} childrenCollection - html ids where to place rendered child ui component(s)
-         * @type {string} childrenCollection[].target class of a div in the parent's html template
-         * @type {UiComponent} childrenCollection[].component to place inside the div
+         * @type {Object[] | null} permanentChildren - html ids where to place rendered child ui component(s)
+         * @type {string} permanentChildren[].target class of a div in the parent's html template
+         * @type {UiComponent} permanentChildren[].component to place inside the div
          */
-        this.childrenCollection = [];
+        this.permanentChildren = [];
+        
+        /**
+         * @type {Object[] | null} dynamicChildren - html ids where to place rendered child ui component(s)
+         * @type {string} dynamicChildren[].target class of a div in the parent's html template
+         * @type {UiComponent} dynamicChildren[].component to place inside the div
+         */
+        this.dynamicChildren = [];
     }
 
     /**
@@ -127,16 +134,25 @@ class UiComponent {
         const componentTemplate = await this.#loadTemplate(this.templatePath);
         await this.renderTpl(tempNode, componentTemplate, propCollectionToRender);
 
-        if (this.childrenCollection) {
-            for (const child of this.childrenCollection) {
-                const childHtmlNode = child.component.componentNode;
-                const childTargetNode = tempNode.querySelector(`.${child.target}`);
-                childTargetNode.appendChild(childHtmlNode);
-            }
+        if (this.permanentChildren) {
+            await this.applyChildren(tempNode, this.permanentChildren);
+        }
+
+        if (this.dynamicChildren) {
+            await this.applyChildren(tempNode, this.dynamicChildren);
         }
 
         this.componentNode.replaceWith(tempNode);
         this.setLoading(false);
+    }
+
+    async applyChildren(parentNode, childrenCollection) {
+            for (const child of childrenCollection) {
+                await child.component.render();
+                const childHtmlNode = child.component.componentNode;
+                const childTargetNode = parentNode.querySelector(`.${child.target}`);
+                childTargetNode.appendChild(childHtmlNode);
+            }
     }
 
     async renderTpl(htmlNode, template, renderProps = {}) {

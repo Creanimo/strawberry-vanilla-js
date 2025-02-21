@@ -9,7 +9,7 @@ class UiTextField extends UiInput {
      * @param {string} value 
      * @param {string} templatePath - The path to the template file.
      */
-    constructor({id,
+    constructor({id = null,
                 label,
                 dataName = label,
                 value,
@@ -18,6 +18,7 @@ class UiTextField extends UiInput {
         super({id, label, dataName, value, callOnBlur});
         this.type = "sv-ui__input-textfield"
         this.templatePath = `${getConfig().templateRoot}input/textfield.html`;
+        this.textfieldId = createId(); // used in label for a11y
     }
 
     getRenderProperties() {
