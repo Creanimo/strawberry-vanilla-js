@@ -827,11 +827,18 @@ class UiComponent {
         this.templatePath = `${getConfig().templateRoot}mytemplate.html`;
 
         /**
-         * @type {Object[] | null} childrenCollection - html ids where to place rendered child ui component(s)
-         * @type {string} childrenCollection[].target class of a div in the parent's html template
-         * @type {UiComponent} childrenCollection[].component to place inside the div
+         * @type {Object[] | null} permanentChildren - html ids where to place rendered child ui component(s)
+         * @type {string} permanentChildren[].target class of a div in the parent's html template
+         * @type {UiComponent} permanentChildren[].component to place inside the div
          */
-        this.childrenCollection = [];
+        this.permanentChildren = [];
+        
+        /**
+         * @type {Object[] | null} dynamicChildren - html ids where to place rendered child ui component(s)
+         * @type {string} dynamicChildren[].target class of a div in the parent's html template
+         * @type {UiComponent} dynamicChildren[].component to place inside the div
+         */
+        this.dynamicChildren = [];
     }
 
     /**
@@ -892,11 +899,9 @@ class UiComponent {
     /**
      * Renders UI components and replaces content of given htmlNode
      */
-    async render(targetNode) {
-        this.targetNode = targetNode;
-
+    async render(targetNode = this.targetNode) {
         this.setLoading(true);
-        this.targetNode.appendChild(this.componentNode);
+        targetNode.appendChild(this.componentNode);
 
         let propCollectionToRender;
         if (this.fetchFunction) {
@@ -911,16 +916,27 @@ class UiComponent {
         const componentTemplate = await this.#loadTemplate(this.templatePath);
         await this.renderTpl(tempNode, componentTemplate, propCollectionToRender);
 
-        if (this.childrenCollection) {
-            for (const child of this.childrenCollection) {
-                const childHtmlNode = child.component.componentNode;
-                const childTargetNode = tempNode.querySelector(`.${child.target}`);
-                childTargetNode.appendChild(childHtmlNode);
-            }
+        if (this.permanentChildren) {
+            await this.applyChildren(tempNode, this.permanentChildren);
+        }
+
+        if (this.dynamicChildren) {
+            await this.applyChildren(tempNode, this.dynamicChildren);
         }
 
         this.componentNode.replaceWith(tempNode);
+        this.componentNode = tempNode;
         this.setLoading(false);
+    }
+
+    async applyChildren(parentNode, childrenCollection, clearTarget = false) {
+            for (const child of childrenCollection) {
+                const childTargetNode = parentNode.querySelector(`.${child.target}`);
+                await child.component.render(childTargetNode);
+                const childHtmlNode = child.component.componentNode;
+                if (clearTarget) { childTargetNode.innerHTML = ""; }
+                childTargetNode.appendChild(childHtmlNode);
+            }
     }
 
     async renderTpl(htmlNode, template, renderProps = {}) {
@@ -967,6 +983,50 @@ class UiComponent {
     }
 }
 
+/**
+ * @typedef {"success" | "error" | "info" | "warning"} AlertType
+ */
+
+class UiAlertMsg extends UiComponent {
+    constructor({
+        id,
+        label,
+        message,
+        alertType,
+        dataName = label,
+        fetchFunction = null,
+    }) {
+        super({id, label, dataName, fetchFunction});
+        this.type = "sv-ui__alert-msg";
+        this.message = message;
+        const validAlertTypes = [
+            "success",
+            "info",
+            "warning",
+            "error",
+        ];
+        if (validAlertTypes.includes(alertType)) {
+            this.alertType = alertType;
+        } else {
+            throw new TypeError("alertType must be 'success', 'info', 'warning' or 'error'.")
+        }
+        this.templatePath = `${getConfig().templateRoot}/alertMsg/alertMsg.html`;
+    }
+
+    createContainer() {
+        const container = super.createContainer();
+        container.classList.add(this.alertType);
+        return container;
+    }
+
+    getRenderProperties() {
+        return {
+            ...super.getRenderProperties(),
+            message: this.message,
+        }
+    }
+}
+
 class UiInput extends UiComponent {
     /**
      * 
@@ -977,18 +1037,21 @@ class UiInput extends UiComponent {
      * @param {Function} callOnBlur 
      */
     constructor({
-        id,
+        id = null,
         label,
         dataName = label,
         value,
         fetchFunction = null,
-        callOnBlur = () => { return undefined; }
+        callOnBlur = null,
+        validationFunction = null,
+        validationResult = null,
     }) {
-        super({id, label, dataName, fetchFunction});
+        super({ id, label, dataName, fetchFunction });
         this.type = "sv-ui__input";
         this.value = value;
         this.callOnBlur = callOnBlur;
-        this.textfieldId = createId();
+        this.validationFunction = validationFunction;
+        this.validationResult = validationResult;
     }
 
     getRenderProperties() {
@@ -1001,17 +1064,43 @@ class UiInput extends UiComponent {
     async render(targetNode) {
         await super.render(targetNode);
         await this.setEventListeners();
+        if (this.validationFunction) {
+            await this.validateInput();
+        }
     }
 
     async setEventListeners() {
         const inputElement = document.getElementById(this.id).querySelector("input");
 
-        const onBlur = () => {
+        const onBlur = async () => {
             this.value = inputElement.value;
-            this.callOnBlur();
+            if (this.callOnBlur) {
+                this.callOnBlur();
+            }
             console.log(`Input UI Component now has value: ${this.value}`);
+            if (this.validationFunction) {
+                await this.validateInput();
+            }
         };
         inputElement.addEventListener("blur", onBlur);
+    }
+
+    async validateInput() {
+        if (this.validationFunction) {
+            const previousResult = this.validationResult;
+            this.validationResult = this.validationFunction(this.value);
+            if (previousResult !== this.validationResult) {
+                this.dynamicChildren = this.dynamicChildren.filter(child => child.target !== "validationAlert");
+                const alert = new UiAlertMsg({
+                    alertType: this.validationResult.alertType,
+                    message: this.validationResult.message
+                });
+                this.dynamicChildren.push({ target: "validationAlert", component: alert });
+                await this.applyChildren(this.componentNode, this.dynamicChildren, true);
+            }
+        } else {
+            return
+        }
     }
 }
 
@@ -1023,15 +1112,19 @@ class UiTextField extends UiInput {
      * @param {string} value 
      * @param {string} templatePath - The path to the template file.
      */
-    constructor({id,
+    constructor({id = null,
                 label,
                 dataName = label,
                 value,
-                callOnBlur = () => { return undefined; }
+                fetchFunction = null,
+                callOnBlur = () => { return undefined; },
+                validationFunction = null,
+                validationResult = null,
     }) {
-        super({id, label, dataName, value, callOnBlur});
+        super({id, label, dataName, value, fetchFunction, callOnBlur, validationFunction, validationResult});
         this.type = "sv-ui__input-textfield";
         this.templatePath = `${getConfig().templateRoot}input/textfield.html`;
+        this.textfieldId = createId(); // used in label for a11y
     }
 
     getRenderProperties() {

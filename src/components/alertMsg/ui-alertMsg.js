@@ -1,4 +1,5 @@
-import UiComponent from "../../ui-component";
+import { getConfig } from "../../tools/initConfig";
+import UiComponent from "../ui-component";
 
 /**
  * @typedef {"success" | "error" | "info" | "warning"} AlertType
@@ -9,35 +10,37 @@ class UiAlertMsg extends UiComponent {
         id,
         label,
         message,
-        alertLevel,
+        alertType,
         dataName = label,
         fetchFunction = null,
     }) {
         super({id, label, dataName, fetchFunction});
         this.type = "sv-ui__alert-msg"
         this.message = message;
-        validAlertLevels = [
+        const validAlertTypes = [
             "success",
             "info",
             "warning",
             "error",
         ]
-        if (validAlertLevels.includes(alertLevel)) {
-            this.alertLevel = alertLevel;
+        if (validAlertTypes.includes(alertType)) {
+            this.alertType = alertType;
         } else {
-            throw new TypeError("alertLevel must be 'success', 'info', 'warning' or 'error'.")
-        };
+            throw new TypeError("alertType must be 'success', 'info', 'warning' or 'error'.")
+        }
+        this.templatePath = `${getConfig().templateRoot}/alertMsg/alertMsg.html`;
     }
 
-    render() {
-        super.render();
+    createContainer() {
+        const container = super.createContainer();
+        container.classList.add(this.alertType);
+        return container;
     }
 
     getRenderProperties() {
         return {
             ...super.getRenderProperties(),
             message: this.message,
-            alertLevel: this.alertLevel,
         }
     }
 }

@@ -115,11 +115,9 @@ class UiComponent {
     /**
      * Renders UI components and replaces content of given htmlNode
      */
-    async render(targetNode) {
-        this.targetNode = targetNode;
-
+    async render(targetNode = this.targetNode) {
         this.setLoading(true);
-        this.targetNode.appendChild(this.componentNode);
+        targetNode.appendChild(this.componentNode);
 
         let propCollectionToRender;
         if (this.fetchFunction) {
@@ -143,14 +141,16 @@ class UiComponent {
         }
 
         this.componentNode.replaceWith(tempNode);
+        this.componentNode = tempNode
         this.setLoading(false);
     }
 
-    async applyChildren(parentNode, childrenCollection) {
+    async applyChildren(parentNode, childrenCollection, clearTarget = false) {
             for (const child of childrenCollection) {
-                await child.component.render();
-                const childHtmlNode = child.component.componentNode;
                 const childTargetNode = parentNode.querySelector(`.${child.target}`);
+                await child.component.render(childTargetNode);
+                const childHtmlNode = child.component.componentNode;
+                if (clearTarget) { childTargetNode.innerHTML = "" }
                 childTargetNode.appendChild(childHtmlNode);
             }
     }

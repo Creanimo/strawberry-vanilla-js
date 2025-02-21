@@ -1,6 +1,5 @@
-import { createId } from "../../tools/createId.js";
 import UiComponent from "../ui-component.js";
-import UiAlertMsg from "./alertMsg/ui-alertMsg.js";
+import UiAlertMsg from "../alertMsg/ui-alertMsg.js";
 
 class UiInput extends UiComponent {
     /**
@@ -21,7 +20,7 @@ class UiInput extends UiComponent {
         validationFunction = null,
         validationResult = null,
     }) {
-        super({id, label, dataName, fetchFunction})
+        super({ id, label, dataName, fetchFunction })
         this.type = "sv-ui__input"
         this.value = value;
         this.callOnBlur = callOnBlur;
@@ -39,27 +38,39 @@ class UiInput extends UiComponent {
     async render(targetNode) {
         await super.render(targetNode);
         await this.setEventListeners();
+        if (this.validationFunction) {
+            await this.validateInput();
+        }
     }
 
     async setEventListeners() {
         const inputElement = document.getElementById(this.id).querySelector("input");
 
-        const onBlur = () => {
+        const onBlur = async () => {
             this.value = inputElement.value;
             if (this.callOnBlur) {
                 this.callOnBlur();
             }
             console.log(`Input UI Component now has value: ${this.value}`);
+            if (this.validationFunction) {
+                await this.validateInput();
+            }
         }
         inputElement.addEventListener("blur", onBlur)
     }
 
-    validateInput() {
+    async validateInput() {
         if (this.validationFunction) {
-            previousResult = this.validationResult;
+            const previousResult = this.validationResult;
             this.validationResult = this.validationFunction(this.value);
-            if (previousResult != this.validationResult) {
-                new UiAlertMsg()
+            if (previousResult !== this.validationResult) {
+                this.dynamicChildren = this.dynamicChildren.filter(child => child.target !== "validationAlert");
+                const alert = new UiAlertMsg({
+                    alertType: this.validationResult.alertType,
+                    message: this.validationResult.message
+                });
+                this.dynamicChildren.push({ target: "validationAlert", component: alert });
+                await this.applyChildren(this.componentNode, this.dynamicChildren, true);
             }
         } else {
             return
