@@ -24,8 +24,10 @@
   },
   "homepage": "https://github.com/Creanimo/strawberry-vanilla-js#readme",
   "dependencies": {
+    "@highlightjs/cdn-assets": "^11.11.1",
     "dotenv": "^16.4.7",
     "mustache": "^4.2.0",
+    "prismjs": "^1.29.0",
     "sass": "^1.83.4"
   },
   "devDependencies": {
@@ -36,6 +38,7 @@
     "mocha": "^11.1.0",
     "rollup": "^4.34.6",
     "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-import-css": "^3.5.8",
     "sinon": "^19.0.2",
     "winston": "^3.17.0"
   }

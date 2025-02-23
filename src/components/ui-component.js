@@ -11,18 +11,18 @@ class UiComponent {
      * @param {Object} options - Configuration options for the UI component.
      * @param {string} options.id - The unique identifier for the component.
      * @param {string} options.label - The label for the component.
-     * @param {string} [options.type="ui-component"] - The type of the component.
      * @param {() => Promise<Object>} [options.fetchFunction=null] - An optional async function to fetch data.
      */
-    constructor({ label, id = null, dataName = label, fetchFunction = null }) {
+    constructor({
+        label,
+        id = null,
+        fetchFunction = null
+    }) {
         /** @type {string} */
         this.id = id;
 
         /** @type {string} */
         this.label = label;
-
-        /** @type {string} */
-        this.dataName = dataName;
 
         /** @type {string} */
         this.type = "sv-ui__component";

@@ -4,11 +4,11 @@ import UiAlertMsg from "../alertMsg/ui-alertMsg.js";
 class UiInput extends UiComponent {
     /**
      * 
-     * @param {*} id 
-     * @param {*} label 
-     * @param {*} value 
-     * @param {*} name 
-     * @param {Function} callOnBlur 
+     * @param {string} id 
+     * @param {string} label 
+     * @param {string} value 
+     * @param {string} dataName 
+     * @param {() => void | null} callOnBlur 
      */
     constructor({
         id = null,
@@ -20,9 +20,17 @@ class UiInput extends UiComponent {
         validationFunction = null,
         validationResult = null,
     }) {
-        super({ id, label, dataName, fetchFunction })
+        super({ id, label, fetchFunction });
+        /** @type {string} */
         this.type = "sv-ui__input"
+
+        /** @type {string} */
         this.value = value;
+
+        /** @type {string} */
+        this.dataName = dataName;
+
+        /** @type {() => void | null} */
         this.callOnBlur = callOnBlur;
         this.validationFunction = validationFunction;
         this.validationResult = validationResult;
