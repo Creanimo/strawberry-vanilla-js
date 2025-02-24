@@ -14,7 +14,7 @@ class UiAlertMsg extends UiComponent {
         dataName = label,
         fetchFunction = null,
     }) {
-        super({id, label, dataName, fetchFunction});
+        super({id, label, dataName, fetchFunction, logObject: true});
         this.type = "sv-ui__alert-msg"
         this.message = message;
         const validAlertTypes = [

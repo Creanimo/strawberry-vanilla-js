@@ -11,7 +11,7 @@ class UiCodeBlock extends UiComponent {
         code,
         language,
     }) {
-        super({label, id, fetchFunction});
+        super({label, id, fetchFunction, logObjet: true});
 
         this.type = "sv-ui__codeBlock";
 

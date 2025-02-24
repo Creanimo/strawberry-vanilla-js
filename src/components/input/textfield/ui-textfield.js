@@ -19,7 +19,7 @@ class UiTextField extends UiInput {
                 validationFunction = null,
                 validationResult = null,
     }) {
-        super({id, label, dataName, value, fetchFunction, callOnBlur, validationFunction, validationResult});
+        super({id, label, dataName, value, fetchFunction, callOnBlur, validationFunction, validationResult, logObject: true});
         this.type = "sv-ui__input-textfield"
         this.templatePath = `${getConfig().templateRoot}input/textfield.html`;
         this.textfieldId = createId(); // used in label for a11y

@@ -1,6 +1,7 @@
 import Mustache from "mustache";
 import { getConfig } from "../tools/initConfig.js";
 import { createId } from "../tools/createId.js";
+import { log } from "../tools/logger.js";
 
 /**
  * Base class for UI components.
@@ -55,6 +56,15 @@ class UiComponent {
          * @type {UiComponent} dynamicChildren[].component to place inside the div
          */
         this.dynamicChildren = [];
+
+         
+        /**
+         * @type {boolean}
+         */
+        this.logObject = false;
+        if (this.logObject) {
+            log.trace(this, `Initialized a ${this.type}`);
+        }
     }
 
     /**
@@ -110,17 +120,23 @@ class UiComponent {
             await this.renderTpl(this.componentNode, loadingTemplate);
         }
         this.loading = state;
+        log.trace(`${this.type} with ID ${this.id}: loading state is ${this.loading}`)
     }
 
     /**
      * Renders UI components and replaces content of given htmlNode
      */
     async render(targetNode = this.targetNode) {
+        const stackTrace = new Error().stack;
+        log.trace({stackTrace}, `${this.type} with ID ${this.id}: render() called`);
+        
         this.setLoading(true);
         targetNode.appendChild(this.componentNode);
+        log.trace(`${this.type} with ID ${this.id}: append laoding html done.`)
 
         let propCollectionToRender;
         if (this.fetchFunction) {
+            log.trace(`${this.type} with ID ${this.id}: starting fetch.`)
             propCollectionToRender = await this.fetchData(this.fetchFunction);
         } else {
             propCollectionToRender = this.getRenderProperties();
@@ -131,6 +147,7 @@ class UiComponent {
         // Render the actual component
         const componentTemplate = await this.#loadTemplate(this.templatePath);
         await this.renderTpl(tempNode, componentTemplate, propCollectionToRender);
+        log.trace(`${this.type} with ID ${this.id}: rendered tempNode.`)
 
         if (this.permanentChildren) {
             await this.applyChildren(tempNode, this.permanentChildren);
@@ -140,9 +157,14 @@ class UiComponent {
             await this.applyChildren(tempNode, this.dynamicChildren);
         }
 
+        log.trace(tempNode, "${this.type} with ID ${this.id}: Assembled rendering in temp Node")
         this.componentNode.replaceWith(tempNode);
+        if (document.getElementById(this.id)) {
+            log.info(`${this.type} with ID ${this.id}: replaced componentNode with tempNode in DOM.`)
+        }
         this.componentNode = tempNode
         this.setLoading(false);
+        log.trace(`${this.type} with ID ${this.id}: loading state has been set to false (rendering final step).`);
     }
 
     async applyChildren(parentNode, childrenCollection, clearTarget = false) {
