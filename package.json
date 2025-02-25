@@ -40,6 +40,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "babel-plugin-module-resolver": "^5.0.2",
     "chai": "^5.1.2",
+    "flush-cache": "^1.0.1",
     "http-server": "^14.1.1",
     "jsdom": "^26.0.0",
     "jsdom-global": "^3.0.2",
