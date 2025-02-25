@@ -1,5 +1,4 @@
-import { assert, expect } from "chai";
-import sinon from "sinon";
+import { expect } from "chai";
 import "./domSetup.js";
 import UiTextField from "../src/components/input/textfield/ui-textfield.js";
 import { dependencyInjection } from "./mockDependencies.js";
@@ -16,10 +15,6 @@ describe("UiTextField (Real Templates)", async () => {
         document.body.removeChild(testContainer);
     });
 
-    after(() => {
-        sinon.restore();
-    });
-
     describe("Textfield as used by consumer", () => {
         it("should create a textfield with correct properties", async () => {
             const textfield = new UiTextField({
@@ -28,8 +23,14 @@ describe("UiTextField (Real Templates)", async () => {
                 value: "Sarah",
                 dependencies: dependencyInjection,
             });
-
-            console.log(textfield.label);
+            const sometemplate = dependencyInjection.loadTemplate(
+                    `${dependencyInjection.getConfig().templateRoot}input/textfield.html`
+            );
+            dependencyInjection.renderTpl(testContainer, sometemplate, {id: "555", label: "hey"})
+            await textfield.render(testContainer)
+            console.log(textfield.targetNode.outerHTML)
+            expect(textfield.label).to.be.equal("Name");
+            expect(textfield.id).to.be.equal("mock-id");
         });
     });
 });

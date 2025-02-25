@@ -803,7 +803,7 @@ async function loadTemplate(templatePath) {
     return await response.text();
 }
 
-async function renderTpl(htmlNode, template, renderProps = {}) {
+function renderTpl(htmlNode, template, renderProps = {}) {
     htmlNode.innerHTML = "";
     const htmlStr = mustache.render(template, renderProps);
     htmlNode.innerHTML = htmlStr;
@@ -5409,11 +5409,9 @@ class UiComponent {
      * Renders UI components and replaces content of given htmlNode
      */
     async render(targetNode = this.targetNode) {
-        const stackTrace = new Error().stack;
-        this._dependencies.log.trace(
-            { stackTrace },
-            `${this.type} with ID ${this.id}: render() called`,
-        );
+        if (targetNode !== this.targetNode) {
+            this.targetNode = targetNode;
+        }
 
         await this.setLoading(true);
         targetNode.appendChild(this.componentNode);
@@ -5595,7 +5593,9 @@ class UiInput extends UiComponent {
             await this.validateInput();
         } else {
             // still print alert if one was given through constructor
-            await this.validationResultToAlertChild();
+            if (this.validationResult) {
+                await this.validationResultToAlertChild();
+            }
         }
     }
 
@@ -5624,6 +5624,7 @@ class UiInput extends UiComponent {
         const alert = new UiAlertMsg({
             alertType: this.validationResult.alertType,
             message: this.validationResult.message,
+            dependencies: dependencyInjection,
         });
         this.dynamicChildren.push({ target: "validationAlert", component: alert });
         await this.applyChildren(this.componentNode, this.dynamicChildren, true);
@@ -5634,7 +5635,9 @@ class UiInput extends UiComponent {
             const previousResult = this.validationResult;
             this.validationResult = this.validationFunction(this.value);
             if (previousResult !== this.validationResult) {
-                await this.validationResultToAlertChild();
+                if (this.validationResult) {
+                    await this.validationResultToAlertChild();
+                }
             }
         } else {
             return;
@@ -5660,7 +5663,7 @@ class UiTextField extends UiInput {
                 validationResult = null,
                 dependencies = dependencyInjection,
     }) {
-        super({id, label, dataName, value, fetchFunction, callOnBlur, validationFunction, validationResult, logObject: true, dependencies: dependencyInjection});
+        super({id, label, dataName, value, fetchFunction, callOnBlur, validationFunction, validationResult, logObject: true, dependencies});
         this.type = "sv-ui__input-textfield";
         this.templatePath = `${this._dependencies.getConfig().templateRoot}input/textfield.html`;
         this.textfieldId = createId(); // used in label for a11y

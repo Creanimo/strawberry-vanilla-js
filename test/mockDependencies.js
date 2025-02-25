@@ -8,14 +8,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 function loadTemplateMock(filePath) {
-    return readFileSync(resolve(__dirname, filePath), "utf8");
+    const template = readFileSync(resolve(__dirname, filePath), "utf8");
+    return template; 
 }
 
 function renderTplMock(htmlNode, template, renderProps = {}) {
+    console.log("Node before render" + htmlNode)
+    console.log(htmlNode instanceof HTMLDivElement)
     htmlNode.innerHTML = "";
     const htmlStr = Mustache.render(template, renderProps);
+    console.log("Html string:" + htmlStr)
     htmlNode.innerHTML = htmlStr;
-    return htmlNode;
+    console.log("html node:" + htmlNode.innerHTML)
+    console.log(htmlNode instanceof HTMLDivElement)
 }
 
 async function loadConfigMock() {
@@ -62,7 +67,7 @@ class Dependencies {
         this.renderTpl = renderTpl;
         this.loadConfig = loadConfig;
         this.getConfig = getConfig;
-        this.log = logMock;
+        this.log = new logMock;
         this.createId = createIdMock;
     }
 }

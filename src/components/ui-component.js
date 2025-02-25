@@ -125,11 +125,9 @@ class UiComponent {
      * Renders UI components and replaces content of given htmlNode
      */
     async render(targetNode = this.targetNode) {
-        const stackTrace = new Error().stack;
-        this._dependencies.log.trace(
-            { stackTrace },
-            `${this.type} with ID ${this.id}: render() called`,
-        );
+        if (targetNode !== this.targetNode) {
+            this.targetNode = targetNode;
+        }
 
         await this.setLoading(true);
         targetNode.appendChild(this.componentNode);

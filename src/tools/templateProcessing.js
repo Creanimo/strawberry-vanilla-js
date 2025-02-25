@@ -14,7 +14,7 @@ async function loadTemplate(templatePath) {
     return await response.text();
 }
 
-async function renderTpl(htmlNode, template, renderProps = {}) {
+function renderTpl(htmlNode, template, renderProps = {}) {
     htmlNode.innerHTML = "";
     const htmlStr = Mustache.render(template, renderProps);
     htmlNode.innerHTML = htmlStr;

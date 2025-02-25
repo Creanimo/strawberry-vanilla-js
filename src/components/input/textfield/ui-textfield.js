@@ -1,4 +1,3 @@
-import { getConfig } from "../../../tools/initConfig.js";
 import { createId } from "../../../tools/createId.js";
 import UiInput from "../ui-input.js";
 import { dependencyInjection } from "../../../tools/commonDependencies.js";

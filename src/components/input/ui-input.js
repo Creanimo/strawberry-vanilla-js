@@ -52,7 +52,9 @@ class UiInput extends UiComponent {
             await this.validateInput();
         } else {
             // still print alert if one was given through constructor
-            await this.validationResultToAlertChild();
+            if (this.validationResult) {
+                await this.validationResultToAlertChild();
+            }
         }
     }
 
@@ -81,6 +83,7 @@ class UiInput extends UiComponent {
         const alert = new UiAlertMsg({
             alertType: this.validationResult.alertType,
             message: this.validationResult.message,
+            dependencies: dependencyInjection,
         });
         this.dynamicChildren.push({ target: "validationAlert", component: alert });
         await this.applyChildren(this.componentNode, this.dynamicChildren, true);
@@ -91,7 +94,9 @@ class UiInput extends UiComponent {
             const previousResult = this.validationResult;
             this.validationResult = this.validationFunction(this.value);
             if (previousResult !== this.validationResult) {
-                await this.validationResultToAlertChild();
+                if (this.validationResult) {
+                    await this.validationResultToAlertChild();
+                }
             }
         } else {
             return;
