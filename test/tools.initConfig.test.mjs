@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import sinon from "sinon";
-import { getConfig, loadConfig } from "../../src/index.js";
+import { getConfig, loadConfig } from "../src/tools/initConfig.js";
 
 describe("Config Fetch Tests", () => {
     let fetchStub;

@@ -1,5 +1,5 @@
-import { getConfig } from "../../tools/initConfig";
-import UiComponent from "../ui-component";
+import { getConfig } from "../../tools/initConfig.js";
+import UiComponent from "../ui-component.js";
 
 /**
  * @typedef {"success" | "error" | "info" | "warning"} AlertType

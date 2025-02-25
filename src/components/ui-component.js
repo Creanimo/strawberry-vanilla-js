@@ -14,11 +14,7 @@ class UiComponent {
      * @param {string} options.label - The label for the component.
      * @param {() => Promise<Object>} [options.fetchFunction=null] - An optional async function to fetch data.
      */
-    constructor({
-        label,
-        id = null,
-        fetchFunction = null
-    }) {
+    constructor({ label, id = null, fetchFunction = null }) {
         /** @type {string} */
         this.id = id;
 
@@ -29,7 +25,7 @@ class UiComponent {
         this.type = "sv-ui__component";
 
         /** @type {boolean} */
-        this.loading = false;
+        this.loading = null;
 
         /** @type {(() => Promise<Object>) | null} */
         this.fetchFunction = fetchFunction;
@@ -49,7 +45,7 @@ class UiComponent {
          * @type {UiComponent} permanentChildren[].component to place inside the div
          */
         this.permanentChildren = [];
-        
+
         /**
          * @type {Object[] | null} dynamicChildren - html ids where to place rendered child ui component(s)
          * @type {string} dynamicChildren[].target class of a div in the parent's html template
@@ -57,7 +53,6 @@ class UiComponent {
          */
         this.dynamicChildren = [];
 
-         
         /**
          * @type {boolean}
          */
@@ -120,7 +115,9 @@ class UiComponent {
             await this.renderTpl(this.componentNode, loadingTemplate);
         }
         this.loading = state;
-        log.trace(`${this.type} with ID ${this.id}: loading state is ${this.loading}`)
+        log.trace(
+            `${this.type} with ID ${this.id}: loading state is ${this.loading}`,
+        );
     }
 
     /**
@@ -128,53 +125,70 @@ class UiComponent {
      */
     async render(targetNode = this.targetNode) {
         const stackTrace = new Error().stack;
-        log.trace({stackTrace}, `${this.type} with ID ${this.id}: render() called`);
-        
-        this.setLoading(true);
+        log.trace(
+            { stackTrace },
+            `${this.type} with ID ${this.id}: render() called`,
+        );
+
+        await this.setLoading(true);
         targetNode.appendChild(this.componentNode);
-        log.trace(`${this.type} with ID ${this.id}: append laoding html done.`)
+        log.trace(`${this.type} with ID ${this.id}: append loading html done.`);
 
-        let propCollectionToRender;
-        if (this.fetchFunction) {
-            log.trace(`${this.type} with ID ${this.id}: starting fetch.`)
-            propCollectionToRender = await this.fetchData(this.fetchFunction);
-        } else {
-            propCollectionToRender = this.getRenderProperties();
+        try {
+            let propCollectionToRender;
+            if (this.fetchFunction) {
+                log.trace(`${this.type} with ID ${this.id}: starting fetch.`);
+                propCollectionToRender = await this.fetchData(this.fetchFunction);
+            } else {
+                propCollectionToRender = this.getRenderProperties();
+            }
+
+            const tempNode = this.createContainer();
+
+            // Render the actual component
+            const componentTemplate = await this.#loadTemplate(this.templatePath);
+            await this.renderTpl(tempNode, componentTemplate, propCollectionToRender);
+            log.trace(`${this.type} with ID ${this.id}: rendered tempNode.`);
+
+            if (this.permanentChildren) {
+                await this.applyChildren(tempNode, this.permanentChildren);
+            }
+
+            if (this.dynamicChildren) {
+                await this.applyChildren(tempNode, this.dynamicChildren);
+            }
+
+            log.trace(
+                tempNode,
+                "${this.type} with ID ${this.id}: Assembled rendering in temp Node",
+            );
+            this.componentNode.replaceWith(tempNode);
+            if (document.getElementById(this.id)) {
+                log.info(
+                    `${this.type} with ID ${this.id}: replaced componentNode with tempNode in DOM.`,
+                );
+            }
+            this.componentNode = tempNode;
+        } catch (error) {
+            console.error("Render error:", error);
+        } finally {
+            await this.setLoading(false);
+            log.trace(
+                `${this.type} with ID ${this.id}: loading state has been set to false (rendering final step).`,
+            );
         }
-
-        const tempNode = this.createContainer();
-
-        // Render the actual component
-        const componentTemplate = await this.#loadTemplate(this.templatePath);
-        await this.renderTpl(tempNode, componentTemplate, propCollectionToRender);
-        log.trace(`${this.type} with ID ${this.id}: rendered tempNode.`)
-
-        if (this.permanentChildren) {
-            await this.applyChildren(tempNode, this.permanentChildren);
-        }
-
-        if (this.dynamicChildren) {
-            await this.applyChildren(tempNode, this.dynamicChildren);
-        }
-
-        log.trace(tempNode, "${this.type} with ID ${this.id}: Assembled rendering in temp Node")
-        this.componentNode.replaceWith(tempNode);
-        if (document.getElementById(this.id)) {
-            log.info(`${this.type} with ID ${this.id}: replaced componentNode with tempNode in DOM.`)
-        }
-        this.componentNode = tempNode
-        this.setLoading(false);
-        log.trace(`${this.type} with ID ${this.id}: loading state has been set to false (rendering final step).`);
     }
 
     async applyChildren(parentNode, childrenCollection, clearTarget = false) {
-            for (const child of childrenCollection) {
-                const childTargetNode = parentNode.querySelector(`.${child.target}`);
-                await child.component.render(childTargetNode);
-                const childHtmlNode = child.component.componentNode;
-                if (clearTarget) { childTargetNode.innerHTML = "" }
-                childTargetNode.appendChild(childHtmlNode);
+        for (const child of childrenCollection) {
+            const childTargetNode = parentNode.querySelector(`.${child.target}`);
+            await child.component.render(childTargetNode);
+            const childHtmlNode = child.component.componentNode;
+            if (clearTarget) {
+                childTargetNode.innerHTML = "";
             }
+            childTargetNode.appendChild(childHtmlNode);
+        }
     }
 
     async renderTpl(htmlNode, template, renderProps = {}) {

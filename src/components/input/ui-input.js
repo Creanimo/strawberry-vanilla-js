@@ -3,12 +3,12 @@ import UiAlertMsg from "../alertMsg/ui-alertMsg.js";
 
 class UiInput extends UiComponent {
     /**
-     * 
-     * @param {string} id 
-     * @param {string} label 
-     * @param {string} value 
-     * @param {string} dataName 
-     * @param {() => void | null} callOnBlur 
+     *
+     * @param {string} id
+     * @param {string} label
+     * @param {string} value
+     * @param {string} dataName
+     * @param {() => void | null} callOnBlur
      */
     constructor({
         id = null,
@@ -22,7 +22,7 @@ class UiInput extends UiComponent {
     }) {
         super({ id, label, fetchFunction });
         /** @type {string} */
-        this.type = "sv-ui__input"
+        this.type = "sv-ui__input";
 
         /** @type {string} */
         this.value = value;
@@ -48,11 +48,16 @@ class UiInput extends UiComponent {
         await this.setEventListeners();
         if (this.validationFunction) {
             await this.validateInput();
+        } else {
+            // still print alert if one was given through constructor
+            await this.validationResultToAlertChild();
         }
     }
 
     async setEventListeners() {
-        const inputElement = document.getElementById(this.id).querySelector("input");
+        const inputElement = document
+            .getElementById(this.id)
+            .querySelector("input");
 
         const onBlur = async () => {
             this.value = inputElement.value;
@@ -63,8 +68,20 @@ class UiInput extends UiComponent {
             if (this.validationFunction) {
                 await this.validateInput();
             }
-        }
-        inputElement.addEventListener("blur", onBlur)
+        };
+        inputElement.addEventListener("blur", onBlur);
+    }
+
+    async validationResultToAlertChild() {
+        this.dynamicChildren = this.dynamicChildren.filter(
+            (child) => child.target !== "validationAlert",
+        );
+        const alert = new UiAlertMsg({
+            alertType: this.validationResult.alertType,
+            message: this.validationResult.message,
+        });
+        this.dynamicChildren.push({ target: "validationAlert", component: alert });
+        await this.applyChildren(this.componentNode, this.dynamicChildren, true);
     }
 
     async validateInput() {
@@ -72,16 +89,10 @@ class UiInput extends UiComponent {
             const previousResult = this.validationResult;
             this.validationResult = this.validationFunction(this.value);
             if (previousResult !== this.validationResult) {
-                this.dynamicChildren = this.dynamicChildren.filter(child => child.target !== "validationAlert");
-                const alert = new UiAlertMsg({
-                    alertType: this.validationResult.alertType,
-                    message: this.validationResult.message
-                });
-                this.dynamicChildren.push({ target: "validationAlert", component: alert });
-                await this.applyChildren(this.componentNode, this.dynamicChildren, true);
+                await this.validationResultToAlertChild();
             }
         } else {
-            return
+            return;
         }
     }
 }

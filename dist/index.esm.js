@@ -5259,11 +5259,7 @@ class UiComponent {
      * @param {string} options.label - The label for the component.
      * @param {() => Promise<Object>} [options.fetchFunction=null] - An optional async function to fetch data.
      */
-    constructor({
-        label,
-        id = null,
-        fetchFunction = null
-    }) {
+    constructor({ label, id = null, fetchFunction = null }) {
         /** @type {string} */
         this.id = id;
 
@@ -5274,7 +5270,7 @@ class UiComponent {
         this.type = "sv-ui__component";
 
         /** @type {boolean} */
-        this.loading = false;
+        this.loading = null;
 
         /** @type {(() => Promise<Object>) | null} */
         this.fetchFunction = fetchFunction;
@@ -5294,7 +5290,7 @@ class UiComponent {
          * @type {UiComponent} permanentChildren[].component to place inside the div
          */
         this.permanentChildren = [];
-        
+
         /**
          * @type {Object[] | null} dynamicChildren - html ids where to place rendered child ui component(s)
          * @type {string} dynamicChildren[].target class of a div in the parent's html template
@@ -5302,7 +5298,6 @@ class UiComponent {
          */
         this.dynamicChildren = [];
 
-         
         /**
          * @type {boolean}
          */
@@ -5365,7 +5360,9 @@ class UiComponent {
             await this.renderTpl(this.componentNode, loadingTemplate);
         }
         this.loading = state;
-        RoarrExports.Roarr.trace(`${this.type} with ID ${this.id}: loading state is ${this.loading}`);
+        RoarrExports.Roarr.trace(
+            `${this.type} with ID ${this.id}: loading state is ${this.loading}`,
+        );
     }
 
     /**
@@ -5373,53 +5370,70 @@ class UiComponent {
      */
     async render(targetNode = this.targetNode) {
         const stackTrace = new Error().stack;
-        RoarrExports.Roarr.trace({stackTrace}, `${this.type} with ID ${this.id}: render() called`);
-        
-        this.setLoading(true);
+        RoarrExports.Roarr.trace(
+            { stackTrace },
+            `${this.type} with ID ${this.id}: render() called`,
+        );
+
+        await this.setLoading(true);
         targetNode.appendChild(this.componentNode);
-        RoarrExports.Roarr.trace(`${this.type} with ID ${this.id}: append laoding html done.`);
+        RoarrExports.Roarr.trace(`${this.type} with ID ${this.id}: append loading html done.`);
 
-        let propCollectionToRender;
-        if (this.fetchFunction) {
-            RoarrExports.Roarr.trace(`${this.type} with ID ${this.id}: starting fetch.`);
-            propCollectionToRender = await this.fetchData(this.fetchFunction);
-        } else {
-            propCollectionToRender = this.getRenderProperties();
+        try {
+            let propCollectionToRender;
+            if (this.fetchFunction) {
+                RoarrExports.Roarr.trace(`${this.type} with ID ${this.id}: starting fetch.`);
+                propCollectionToRender = await this.fetchData(this.fetchFunction);
+            } else {
+                propCollectionToRender = this.getRenderProperties();
+            }
+
+            const tempNode = this.createContainer();
+
+            // Render the actual component
+            const componentTemplate = await this.#loadTemplate(this.templatePath);
+            await this.renderTpl(tempNode, componentTemplate, propCollectionToRender);
+            RoarrExports.Roarr.trace(`${this.type} with ID ${this.id}: rendered tempNode.`);
+
+            if (this.permanentChildren) {
+                await this.applyChildren(tempNode, this.permanentChildren);
+            }
+
+            if (this.dynamicChildren) {
+                await this.applyChildren(tempNode, this.dynamicChildren);
+            }
+
+            RoarrExports.Roarr.trace(
+                tempNode,
+                "${this.type} with ID ${this.id}: Assembled rendering in temp Node",
+            );
+            this.componentNode.replaceWith(tempNode);
+            if (document.getElementById(this.id)) {
+                RoarrExports.Roarr.info(
+                    `${this.type} with ID ${this.id}: replaced componentNode with tempNode in DOM.`,
+                );
+            }
+            this.componentNode = tempNode;
+        } catch (error) {
+            console.error("Render error:", error);
+        } finally {
+            await this.setLoading(false);
+            RoarrExports.Roarr.trace(
+                `${this.type} with ID ${this.id}: loading state has been set to false (rendering final step).`,
+            );
         }
-
-        const tempNode = this.createContainer();
-
-        // Render the actual component
-        const componentTemplate = await this.#loadTemplate(this.templatePath);
-        await this.renderTpl(tempNode, componentTemplate, propCollectionToRender);
-        RoarrExports.Roarr.trace(`${this.type} with ID ${this.id}: rendered tempNode.`);
-
-        if (this.permanentChildren) {
-            await this.applyChildren(tempNode, this.permanentChildren);
-        }
-
-        if (this.dynamicChildren) {
-            await this.applyChildren(tempNode, this.dynamicChildren);
-        }
-
-        RoarrExports.Roarr.trace(tempNode, "${this.type} with ID ${this.id}: Assembled rendering in temp Node");
-        this.componentNode.replaceWith(tempNode);
-        if (document.getElementById(this.id)) {
-            RoarrExports.Roarr.info(`${this.type} with ID ${this.id}: replaced componentNode with tempNode in DOM.`);
-        }
-        this.componentNode = tempNode;
-        this.setLoading(false);
-        RoarrExports.Roarr.trace(`${this.type} with ID ${this.id}: loading state has been set to false (rendering final step).`);
     }
 
     async applyChildren(parentNode, childrenCollection, clearTarget = false) {
-            for (const child of childrenCollection) {
-                const childTargetNode = parentNode.querySelector(`.${child.target}`);
-                await child.component.render(childTargetNode);
-                const childHtmlNode = child.component.componentNode;
-                if (clearTarget) { childTargetNode.innerHTML = ""; }
-                childTargetNode.appendChild(childHtmlNode);
+        for (const child of childrenCollection) {
+            const childTargetNode = parentNode.querySelector(`.${child.target}`);
+            await child.component.render(childTargetNode);
+            const childHtmlNode = child.component.componentNode;
+            if (clearTarget) {
+                childTargetNode.innerHTML = "";
             }
+            childTargetNode.appendChild(childHtmlNode);
+        }
     }
 
     async renderTpl(htmlNode, template, renderProps = {}) {
@@ -5512,12 +5526,12 @@ class UiAlertMsg extends UiComponent {
 
 class UiInput extends UiComponent {
     /**
-     * 
-     * @param {string} id 
-     * @param {string} label 
-     * @param {string} value 
-     * @param {string} dataName 
-     * @param {() => void | null} callOnBlur 
+     *
+     * @param {string} id
+     * @param {string} label
+     * @param {string} value
+     * @param {string} dataName
+     * @param {() => void | null} callOnBlur
      */
     constructor({
         id = null,
@@ -5557,11 +5571,16 @@ class UiInput extends UiComponent {
         await this.setEventListeners();
         if (this.validationFunction) {
             await this.validateInput();
+        } else {
+            // still print alert if one was given through constructor
+            await this.validationResultToAlertChild();
         }
     }
 
     async setEventListeners() {
-        const inputElement = document.getElementById(this.id).querySelector("input");
+        const inputElement = document
+            .getElementById(this.id)
+            .querySelector("input");
 
         const onBlur = async () => {
             this.value = inputElement.value;
@@ -5576,21 +5595,27 @@ class UiInput extends UiComponent {
         inputElement.addEventListener("blur", onBlur);
     }
 
+    async validationResultToAlertChild() {
+        this.dynamicChildren = this.dynamicChildren.filter(
+            (child) => child.target !== "validationAlert",
+        );
+        const alert = new UiAlertMsg({
+            alertType: this.validationResult.alertType,
+            message: this.validationResult.message,
+        });
+        this.dynamicChildren.push({ target: "validationAlert", component: alert });
+        await this.applyChildren(this.componentNode, this.dynamicChildren, true);
+    }
+
     async validateInput() {
         if (this.validationFunction) {
             const previousResult = this.validationResult;
             this.validationResult = this.validationFunction(this.value);
             if (previousResult !== this.validationResult) {
-                this.dynamicChildren = this.dynamicChildren.filter(child => child.target !== "validationAlert");
-                const alert = new UiAlertMsg({
-                    alertType: this.validationResult.alertType,
-                    message: this.validationResult.message
-                });
-                this.dynamicChildren.push({ target: "validationAlert", component: alert });
-                await this.applyChildren(this.componentNode, this.dynamicChildren, true);
+                await this.validationResultToAlertChild();
             }
         } else {
-            return
+            return;
         }
     }
 }
