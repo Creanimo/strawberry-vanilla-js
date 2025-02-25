@@ -4,13 +4,16 @@ async function loadConfig() {
     if (!config$1) {
         try {
             const response = await fetch('./sv-ui-config.json');
+            if (!response.ok) throw new Error("Config fetch failed");
             config$1 = await response.json();
         } catch (error) {
-            // console.error('Error loading config:', error);
+            console.error('Error loading config:', error);
+            return Promise.reject(error); // Ensure failures propagate
         }
     }
     return config$1;
 }
+
 
 function getConfig() {
     return config$1;
@@ -785,6 +788,26 @@ mustache.escape = escapeHtml;
 mustache.Scanner = Scanner;
 mustache.Context = Context;
 mustache.Writer = Writer;
+
+/**
+ * Loads an HTML template from a given file path.
+ * @param {string} templatePath - The path to the template file.
+ * @returns {Promise<string>} The template content as a string.
+ * @throws {Error} If the template cannot be loaded.
+ */
+async function loadTemplate(templatePath) {
+    const response = await fetch(templatePath);
+    if (!response.ok) {
+        throw new Error(`Failed to load template: ${templatePath}`);
+    }
+    return await response.text();
+}
+
+async function renderTpl(htmlNode, template, renderProps = {}) {
+    htmlNode.innerHTML = "";
+    const htmlStr = mustache.render(template, renderProps);
+    htmlNode.innerHTML = htmlStr;
+}
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -5248,6 +5271,19 @@ var distExports = requireDist();
 globalThis.ROARR = globalThis.ROARR ?? {};
 globalThis.ROARR.write = distExports.createLogWriter();
 
+class Dependencies {
+    constructor() {
+        this.loadTemplate = loadTemplate;
+        this.renderTpl = renderTpl;
+        this.loadConfig = loadConfig;
+        this.getConfig = getConfig;
+        this.log = RoarrExports.Roarr;
+        this.createId = createId;
+    }
+}
+
+const dependencyInjection = new Dependencies();
+
 /**
  * Base class for UI components.
  */
@@ -5258,8 +5294,12 @@ class UiComponent {
      * @param {string} options.id - The unique identifier for the component.
      * @param {string} options.label - The label for the component.
      * @param {() => Promise<Object>} [options.fetchFunction=null] - An optional async function to fetch data.
+     * @param {Object} dependencies - only pass different dependencies for unit tests in mocha
      */
-    constructor({ label, id = null, fetchFunction = null }) {
+    constructor({ label, id = null, fetchFunction = null, dependencies = dependencyInjection }) {
+        /** @type {Object} */
+        this._dependencies = dependencies;
+
         /** @type {string} */
         this.id = id;
 
@@ -5282,7 +5322,7 @@ class UiComponent {
         this.targetNode = null;
 
         /** @type {string} */
-        this.templatePath = `${getConfig().templateRoot}mytemplate.html`;
+        this.templatePath = `${this._dependencies.getConfig.templateRoot}mytemplate.html`;
 
         /**
          * @type {Object[] | null} permanentChildren - html ids where to place rendered child ui component(s)
@@ -5303,7 +5343,7 @@ class UiComponent {
          */
         this.logObject = false;
         if (this.logObject) {
-            RoarrExports.Roarr.trace(this, `Initialized a ${this.type}`);
+            this._dependencies.log.trace(this, `Initialized a ${this.type}`);
         }
     }
 
@@ -5324,7 +5364,7 @@ class UiComponent {
      */
 
     set id(value) {
-        this._id = value || createId();
+        this._id = value || this._dependencies.createId();
     }
 
     get id() {
@@ -5354,13 +5394,13 @@ class UiComponent {
      */
     async setLoading(state) {
         if (state) {
-            const loadingTemplate = await this.#loadTemplate(
-                `${getConfig().templateRoot}loading.html`,
+            const loadingTemplate = await this._dependencies.loadTemplate(
+                `${this._dependencies.getConfig().templateRoot}loading.html`,
             );
-            await this.renderTpl(this.componentNode, loadingTemplate);
+            await this._dependencies.renderTpl(this.componentNode, loadingTemplate);
         }
         this.loading = state;
-        RoarrExports.Roarr.trace(
+        this._dependencies.log.trace(
             `${this.type} with ID ${this.id}: loading state is ${this.loading}`,
         );
     }
@@ -5370,19 +5410,19 @@ class UiComponent {
      */
     async render(targetNode = this.targetNode) {
         const stackTrace = new Error().stack;
-        RoarrExports.Roarr.trace(
+        this._dependencies.log.trace(
             { stackTrace },
             `${this.type} with ID ${this.id}: render() called`,
         );
 
         await this.setLoading(true);
         targetNode.appendChild(this.componentNode);
-        RoarrExports.Roarr.trace(`${this.type} with ID ${this.id}: append loading html done.`);
+        this._dependencies.log.trace(`${this.type} with ID ${this.id}: append loading html done.`);
 
         try {
             let propCollectionToRender;
             if (this.fetchFunction) {
-                RoarrExports.Roarr.trace(`${this.type} with ID ${this.id}: starting fetch.`);
+                this._dependencies.log.trace(`${this.type} with ID ${this.id}: starting fetch.`);
                 propCollectionToRender = await this.fetchData(this.fetchFunction);
             } else {
                 propCollectionToRender = this.getRenderProperties();
@@ -5391,9 +5431,9 @@ class UiComponent {
             const tempNode = this.createContainer();
 
             // Render the actual component
-            const componentTemplate = await this.#loadTemplate(this.templatePath);
-            await this.renderTpl(tempNode, componentTemplate, propCollectionToRender);
-            RoarrExports.Roarr.trace(`${this.type} with ID ${this.id}: rendered tempNode.`);
+            const componentTemplate = await this._dependencies.loadTemplate(this.templatePath);
+            await this._dependencies.renderTpl(tempNode, componentTemplate, propCollectionToRender);
+            this._dependencies.log.trace(`${this.type} with ID ${this.id}: rendered tempNode.`);
 
             if (this.permanentChildren) {
                 await this.applyChildren(tempNode, this.permanentChildren);
@@ -5403,13 +5443,13 @@ class UiComponent {
                 await this.applyChildren(tempNode, this.dynamicChildren);
             }
 
-            RoarrExports.Roarr.trace(
+            this._dependencies.log.trace(
                 tempNode,
                 "${this.type} with ID ${this.id}: Assembled rendering in temp Node",
             );
             this.componentNode.replaceWith(tempNode);
             if (document.getElementById(this.id)) {
-                RoarrExports.Roarr.info(
+                this._dependencies.log.info(
                     `${this.type} with ID ${this.id}: replaced componentNode with tempNode in DOM.`,
                 );
             }
@@ -5418,7 +5458,7 @@ class UiComponent {
             console.error("Render error:", error);
         } finally {
             await this.setLoading(false);
-            RoarrExports.Roarr.trace(
+            this._dependencies.log.trace(
                 `${this.type} with ID ${this.id}: loading state has been set to false (rendering final step).`,
             );
         }
@@ -5426,7 +5466,8 @@ class UiComponent {
 
     async applyChildren(parentNode, childrenCollection, clearTarget = false) {
         for (const child of childrenCollection) {
-            const childTargetNode = parentNode.querySelector(`.${child.target}`);
+            const childTargetNode = parentNode.querySelector(`.${child.target}`);  
+            child.component._dependencies = this._dependencies;
             await child.component.render(childTargetNode);
             const childHtmlNode = child.component.componentNode;
             if (clearTarget) {
@@ -5434,27 +5475,6 @@ class UiComponent {
             }
             childTargetNode.appendChild(childHtmlNode);
         }
-    }
-
-    async renderTpl(htmlNode, template, renderProps = {}) {
-        htmlNode.innerHTML = "";
-        const htmlStr = mustache.render(template, renderProps);
-        htmlNode.innerHTML = htmlStr;
-    }
-
-    /**
-     * Loads an HTML template from a given file path.
-     * @param {string} templatePath - The path to the template file.
-     * @returns {Promise<string>} The template content as a string.
-     * @throws {Error} If the template cannot be loaded.
-     * @private
-     */
-    async #loadTemplate(templatePath) {
-        const response = await fetch(templatePath);
-        if (!response.ok) {
-            throw new Error(`Failed to load template: ${templatePath}`);
-        }
-        return await response.text();
     }
 
     /**
@@ -5492,8 +5512,9 @@ class UiAlertMsg extends UiComponent {
         alertType,
         dataName = label,
         fetchFunction = null,
+        dependencies = dependencyInjection,
     }) {
-        super({id, label, dataName, fetchFunction, logObject: true});
+        super({id, label, dataName, fetchFunction, logObject: true, dependencies: dependencyInjection});
         this.type = "sv-ui__alert-msg";
         this.message = message;
         const validAlertTypes = [
@@ -5507,7 +5528,7 @@ class UiAlertMsg extends UiComponent {
         } else {
             throw new TypeError("alertType must be 'success', 'info', 'warning' or 'error'.")
         }
-        this.templatePath = `${getConfig().templateRoot}/alertMsg/alertMsg.html`;
+        this.templatePath = `${this._dependencies.getConfig().templateRoot}/alertMsg/alertMsg.html`;
     }
 
     createContainer() {
@@ -5542,8 +5563,9 @@ class UiInput extends UiComponent {
         callOnBlur = null,
         validationFunction = null,
         validationResult = null,
+        dependencies = dependencyInjection,
     }) {
-        super({ id, label, fetchFunction });
+        super({ id, label, fetchFunction, dependencies });
         /** @type {string} */
         this.type = "sv-ui__input";
 
@@ -5636,10 +5658,11 @@ class UiTextField extends UiInput {
                 callOnBlur = () => { return undefined; },
                 validationFunction = null,
                 validationResult = null,
+                dependencies = dependencyInjection,
     }) {
-        super({id, label, dataName, value, fetchFunction, callOnBlur, validationFunction, validationResult, logObject: true});
+        super({id, label, dataName, value, fetchFunction, callOnBlur, validationFunction, validationResult, logObject: true, dependencies: dependencyInjection});
         this.type = "sv-ui__input-textfield";
-        this.templatePath = `${getConfig().templateRoot}input/textfield.html`;
+        this.templatePath = `${this._dependencies.getConfig().templateRoot}input/textfield.html`;
         this.textfieldId = createId(); // used in label for a11y
     }
 

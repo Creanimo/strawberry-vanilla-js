@@ -1,6 +1,7 @@
 import { getConfig } from "../../../tools/initConfig.js";
 import { createId } from "../../../tools/createId.js";
 import UiInput from "../ui-input.js";
+import { dependencyInjection } from "../../../tools/commonDependencies.js";
 
 class UiTextField extends UiInput {
     /**
@@ -18,10 +19,11 @@ class UiTextField extends UiInput {
                 callOnBlur = () => { return undefined; },
                 validationFunction = null,
                 validationResult = null,
+                dependencies = dependencyInjection,
     }) {
-        super({id, label, dataName, value, fetchFunction, callOnBlur, validationFunction, validationResult, logObject: true});
+        super({id, label, dataName, value, fetchFunction, callOnBlur, validationFunction, validationResult, logObject: true, dependencies});
         this.type = "sv-ui__input-textfield"
-        this.templatePath = `${getConfig().templateRoot}input/textfield.html`;
+        this.templatePath = `${this._dependencies.getConfig().templateRoot}input/textfield.html`;
         this.textfieldId = createId(); // used in label for a11y
     }
 

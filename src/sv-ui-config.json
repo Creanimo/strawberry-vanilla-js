@@ -1,0 +1,4 @@
+{
+    "templateRoot": "./templates/",
+    "loggingLevel": "info"
+}

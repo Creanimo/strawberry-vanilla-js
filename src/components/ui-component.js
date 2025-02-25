@@ -1,7 +1,4 @@
-import Mustache from "mustache";
-import { getConfig } from "../tools/initConfig.js";
-import { createId } from "../tools/createId.js";
-import { log } from "../tools/logger.js";
+import { dependencyInjection } from "../tools/commonDependencies.js"
 
 /**
  * Base class for UI components.
@@ -13,8 +10,12 @@ class UiComponent {
      * @param {string} options.id - The unique identifier for the component.
      * @param {string} options.label - The label for the component.
      * @param {() => Promise<Object>} [options.fetchFunction=null] - An optional async function to fetch data.
+     * @param {Object} dependencies - only pass different dependencies for unit tests in mocha
      */
-    constructor({ label, id = null, fetchFunction = null }) {
+    constructor({ label, id = null, fetchFunction = null, dependencies = dependencyInjection }) {
+        /** @type {Object} */
+        this._dependencies = dependencies;
+
         /** @type {string} */
         this.id = id;
 
@@ -37,7 +38,7 @@ class UiComponent {
         this.targetNode = null;
 
         /** @type {string} */
-        this.templatePath = `${getConfig().templateRoot}mytemplate.html`;
+        this.templatePath = `${this._dependencies.getConfig.templateRoot}mytemplate.html`;
 
         /**
          * @type {Object[] | null} permanentChildren - html ids where to place rendered child ui component(s)
@@ -58,7 +59,7 @@ class UiComponent {
          */
         this.logObject = false;
         if (this.logObject) {
-            log.trace(this, `Initialized a ${this.type}`);
+            this._dependencies.log.trace(this, `Initialized a ${this.type}`);
         }
     }
 
@@ -79,7 +80,7 @@ class UiComponent {
      */
 
     set id(value) {
-        this._id = value || createId();
+        this._id = value || this._dependencies.createId();
     }
 
     get id() {
@@ -109,13 +110,13 @@ class UiComponent {
      */
     async setLoading(state) {
         if (state) {
-            const loadingTemplate = await this.#loadTemplate(
-                `${getConfig().templateRoot}loading.html`,
+            const loadingTemplate = await this._dependencies.loadTemplate(
+                `${this._dependencies.getConfig().templateRoot}loading.html`,
             );
-            await this.renderTpl(this.componentNode, loadingTemplate);
+            await this._dependencies.renderTpl(this.componentNode, loadingTemplate);
         }
         this.loading = state;
-        log.trace(
+        this._dependencies.log.trace(
             `${this.type} with ID ${this.id}: loading state is ${this.loading}`,
         );
     }
@@ -125,19 +126,19 @@ class UiComponent {
      */
     async render(targetNode = this.targetNode) {
         const stackTrace = new Error().stack;
-        log.trace(
+        this._dependencies.log.trace(
             { stackTrace },
             `${this.type} with ID ${this.id}: render() called`,
         );
 
         await this.setLoading(true);
         targetNode.appendChild(this.componentNode);
-        log.trace(`${this.type} with ID ${this.id}: append loading html done.`);
+        this._dependencies.log.trace(`${this.type} with ID ${this.id}: append loading html done.`);
 
         try {
             let propCollectionToRender;
             if (this.fetchFunction) {
-                log.trace(`${this.type} with ID ${this.id}: starting fetch.`);
+                this._dependencies.log.trace(`${this.type} with ID ${this.id}: starting fetch.`);
                 propCollectionToRender = await this.fetchData(this.fetchFunction);
             } else {
                 propCollectionToRender = this.getRenderProperties();
@@ -146,9 +147,9 @@ class UiComponent {
             const tempNode = this.createContainer();
 
             // Render the actual component
-            const componentTemplate = await this.#loadTemplate(this.templatePath);
-            await this.renderTpl(tempNode, componentTemplate, propCollectionToRender);
-            log.trace(`${this.type} with ID ${this.id}: rendered tempNode.`);
+            const componentTemplate = await this._dependencies.loadTemplate(this.templatePath);
+            await this._dependencies.renderTpl(tempNode, componentTemplate, propCollectionToRender);
+            this._dependencies.log.trace(`${this.type} with ID ${this.id}: rendered tempNode.`);
 
             if (this.permanentChildren) {
                 await this.applyChildren(tempNode, this.permanentChildren);
@@ -158,13 +159,13 @@ class UiComponent {
                 await this.applyChildren(tempNode, this.dynamicChildren);
             }
 
-            log.trace(
+            this._dependencies.log.trace(
                 tempNode,
                 "${this.type} with ID ${this.id}: Assembled rendering in temp Node",
             );
             this.componentNode.replaceWith(tempNode);
             if (document.getElementById(this.id)) {
-                log.info(
+                this._dependencies.log.info(
                     `${this.type} with ID ${this.id}: replaced componentNode with tempNode in DOM.`,
                 );
             }
@@ -173,7 +174,7 @@ class UiComponent {
             console.error("Render error:", error);
         } finally {
             await this.setLoading(false);
-            log.trace(
+            this._dependencies.log.trace(
                 `${this.type} with ID ${this.id}: loading state has been set to false (rendering final step).`,
             );
         }
@@ -181,7 +182,8 @@ class UiComponent {
 
     async applyChildren(parentNode, childrenCollection, clearTarget = false) {
         for (const child of childrenCollection) {
-            const childTargetNode = parentNode.querySelector(`.${child.target}`);
+            const childTargetNode = parentNode.querySelector(`.${child.target}`);  
+            child.component._dependencies = this._dependencies;
             await child.component.render(childTargetNode);
             const childHtmlNode = child.component.componentNode;
             if (clearTarget) {
@@ -189,27 +191,6 @@ class UiComponent {
             }
             childTargetNode.appendChild(childHtmlNode);
         }
-    }
-
-    async renderTpl(htmlNode, template, renderProps = {}) {
-        htmlNode.innerHTML = "";
-        const htmlStr = Mustache.render(template, renderProps);
-        htmlNode.innerHTML = htmlStr;
-    }
-
-    /**
-     * Loads an HTML template from a given file path.
-     * @param {string} templatePath - The path to the template file.
-     * @returns {Promise<string>} The template content as a string.
-     * @throws {Error} If the template cannot be loaded.
-     * @private
-     */
-    async #loadTemplate(templatePath) {
-        const response = await fetch(templatePath);
-        if (!response.ok) {
-            throw new Error(`Failed to load template: ${templatePath}`);
-        }
-        return await response.text();
     }
 
     /**

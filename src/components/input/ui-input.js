@@ -1,5 +1,6 @@
 import UiComponent from "../ui-component.js";
 import UiAlertMsg from "../alertMsg/ui-alertMsg.js";
+import { dependencyInjection } from "../../tools/commonDependencies.js";
 
 class UiInput extends UiComponent {
     /**
@@ -19,8 +20,9 @@ class UiInput extends UiComponent {
         callOnBlur = null,
         validationFunction = null,
         validationResult = null,
+        dependencies = dependencyInjection,
     }) {
-        super({ id, label, fetchFunction });
+        super({ id, label, fetchFunction, dependencies });
         /** @type {string} */
         this.type = "sv-ui__input";
 

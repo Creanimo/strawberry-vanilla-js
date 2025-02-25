@@ -1,5 +1,6 @@
 import { getConfig } from "../../tools/initConfig.js";
 import UiComponent from "../ui-component.js";
+import { dependencyInjection } from "../../tools/commonDependencies.js";
 
 /**
  * @typedef {"success" | "error" | "info" | "warning"} AlertType
@@ -13,8 +14,9 @@ class UiAlertMsg extends UiComponent {
         alertType,
         dataName = label,
         fetchFunction = null,
+        dependencies = dependencyInjection,
     }) {
-        super({id, label, dataName, fetchFunction, logObject: true});
+        super({id, label, dataName, fetchFunction, logObject: true, dependencies: dependencyInjection});
         this.type = "sv-ui__alert-msg"
         this.message = message;
         const validAlertTypes = [
@@ -28,7 +30,7 @@ class UiAlertMsg extends UiComponent {
         } else {
             throw new TypeError("alertType must be 'success', 'info', 'warning' or 'error'.")
         }
-        this.templatePath = `${getConfig().templateRoot}/alertMsg/alertMsg.html`;
+        this.templatePath = `${this._dependencies.getConfig().templateRoot}/alertMsg/alertMsg.html`;
     }
 
     createContainer() {
