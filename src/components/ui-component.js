@@ -182,11 +182,11 @@ class UiComponent {
         for (const child of childrenCollection) {
             const childTargetNode = parentNode.querySelector(`.${child.target}`);  
             child.component._dependencies = this._dependencies;
-            await child.component.render(childTargetNode);
-            const childHtmlNode = child.component.componentNode;
             if (clearTarget) {
                 childTargetNode.innerHTML = "";
             }
+            await child.component.render(childTargetNode);
+            const childHtmlNode = child.component.componentNode;
             childTargetNode.appendChild(childHtmlNode);
         }
     }

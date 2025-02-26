@@ -93,7 +93,7 @@ class UiInput extends UiComponent {
         if (this.validationFunction) {
             const previousResult = this.validationResult;
             this.validationResult = this.validationFunction(this.value);
-            if (previousResult !== this.validationResult) {
+            if (previousResult.message !== this.validationResult.message) {
                 if (this.validationResult) {
                     await this.validationResultToAlertChild();
                 }

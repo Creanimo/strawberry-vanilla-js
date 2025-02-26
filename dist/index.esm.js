@@ -1,30 +1,29 @@
 let config$1 = null;
 
+/**
+ * Loads the configuration for the UI framework.
+ * @returns {Promise<Object>} The configuration object.
+ * @throws {Error} If fetching the configuration fails.
+ */
 async function loadConfig() {
-    if (!config$1) {
-        try {
-            const response = await fetch('./sv-ui-config.json');
-            if (!response.ok) throw new Error("Config fetch failed");
-            config$1 = await response.json();
-        } catch (error) {
-            console.error('Error loading config:', error);
-            return Promise.reject(error); // Ensure failures propagate
-        }
+  if (!config$1) {
+    try {
+      const response = await fetch('./sv-ui-config.json');
+      if (!response.ok) throw new Error("Config fetch failed");
+      config$1 = await response.json();
+    } catch (error) {
+      console.error('Error loading config:', error);
+      throw error;
     }
-    return config$1;
+  }
+  return config$1;
 }
+
 
 
 function getConfig() {
     return config$1;
 }
-
-const createId = (length = 8) => {
-  return [...crypto.getRandomValues(new Uint8Array(length))]
-    .map(byte => byte.toString(36).padStart(2, '0'))
-    .join('')
-    .slice(0, length);
-};
 
 /*!
  * mustache.js - Logic-less {{mustache}} templates with JavaScript
@@ -3020,9 +3019,9 @@ class ExtendableError extends Error {
 }
 
 var es = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    ExtendableError: ExtendableError,
-    default: ExtendableError
+  __proto__: null,
+  ExtendableError: ExtendableError,
+  default: ExtendableError
 });
 
 var require$$0 = /*@__PURE__*/getAugmentedNamespace(es);
@@ -5271,6 +5270,13 @@ var distExports = requireDist();
 globalThis.ROARR = globalThis.ROARR ?? {};
 globalThis.ROARR.write = distExports.createLogWriter();
 
+const createId = (length = 8) => {
+  return [...crypto.getRandomValues(new Uint8Array(length))]
+    .map(byte => byte.toString(36).padStart(2, '0'))
+    .join('')
+    .slice(0, length);
+};
+
 class Dependencies {
     constructor() {
         this.loadTemplate = loadTemplate;
@@ -5466,11 +5472,11 @@ class UiComponent {
         for (const child of childrenCollection) {
             const childTargetNode = parentNode.querySelector(`.${child.target}`);  
             child.component._dependencies = this._dependencies;
-            await child.component.render(childTargetNode);
-            const childHtmlNode = child.component.componentNode;
             if (clearTarget) {
                 childTargetNode.innerHTML = "";
             }
+            await child.component.render(childTargetNode);
+            const childHtmlNode = child.component.componentNode;
             childTargetNode.appendChild(childHtmlNode);
         }
     }
@@ -5634,7 +5640,7 @@ class UiInput extends UiComponent {
         if (this.validationFunction) {
             const previousResult = this.validationResult;
             this.validationResult = this.validationFunction(this.value);
-            if (previousResult !== this.validationResult) {
+            if (previousResult.message !== this.validationResult.message) {
                 if (this.validationResult) {
                     await this.validationResultToAlertChild();
                 }
@@ -5666,7 +5672,7 @@ class UiTextField extends UiInput {
         super({id, label, dataName, value, fetchFunction, callOnBlur, validationFunction, validationResult, logObject: true, dependencies});
         this.type = "sv-ui__input-textfield";
         this.templatePath = `${this._dependencies.getConfig().templateRoot}input/textfield.html`;
-        this.textfieldId = createId(); // used in label for a11y
+        this.textfieldId = this._dependencies.createId(); // used in label for a11y
     }
 
     getRenderProperties() {
