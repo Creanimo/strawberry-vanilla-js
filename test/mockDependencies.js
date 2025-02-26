@@ -13,14 +13,9 @@ function loadTemplateMock(filePath) {
 }
 
 function renderTplMock(htmlNode, template, renderProps = {}) {
-    console.log("Node before render" + htmlNode)
-    console.log(htmlNode instanceof HTMLDivElement)
     htmlNode.innerHTML = "";
     const htmlStr = Mustache.render(template, renderProps);
-    console.log("Html string:" + htmlStr)
     htmlNode.innerHTML = htmlStr;
-    console.log("html node:" + htmlNode.innerHTML)
-    console.log(htmlNode instanceof HTMLDivElement)
 }
 
 async function loadConfigMock() {
@@ -33,7 +28,7 @@ function getConfigMock() {
 
 class logMock {
     logThis(...args) {
-        console.log(...args);
+        // console.log(...args);
     }
     trace(...args) {
         this.logThis(...args);
@@ -62,6 +57,7 @@ class Dependencies {
         renderTpl = renderTplMock,
         loadConfig = loadConfigMock,
         getConfig = getConfigMock,
+        createId = createIdMock
     ) {
         this.loadTemplate = loadTemplate;
         this.renderTpl = renderTpl;

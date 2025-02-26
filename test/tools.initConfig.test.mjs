@@ -16,17 +16,23 @@ describe("Config Fetch Tests", () => {
         sinon.restore();
     });
 
-    it("should handle fetch errors gracefully", async () => {
+    it("should propagate fetch error", async () => {
+        // Stub console.error to suppress error logging during this test.
+        const consoleErrorStub = sinon.stub(console, "error");
+
         fetchStub.rejects(new Error("Failed to fetch")); // Simulate network failure
 
-        const config = await loadConfig(); // Call loadConfig
+        try {
+            await loadConfig(); // This should throw
+            expect.fail("Expected loadConfig to throw an error");
+        } catch (error) {
+            expect(fetchStub.calledOnce).to.be.true;
+            expect(error.message).to.equal("Failed to fetch");
+            expect(getConfig()).to.be.null;
+        }
 
-        // Check that fetch was called once
-        expect(fetchStub.calledOnce).to.be.true;
-
-        // Expect config to remain null since fetch failed
-        expect(config).to.be.null;
-        expect(getConfig()).to.be.null;
+        // Restore the original console.error after the test.
+        consoleErrorStub.restore();
     });
 
     it("should fetch and store config correctly", async () => {
@@ -34,6 +40,7 @@ describe("Config Fetch Tests", () => {
         const mockConfig = { rootPath: "./ui-components/" };
 
         fetchStub.resolves({
+            ok: true,
             json: sinon.stub().resolves(mockConfig),
         });
 
@@ -50,6 +57,7 @@ describe("Config Fetch Tests", () => {
         const mockConfig = { rootPath: "./my-ui/" };
 
         fetchStub.resolves({
+            ok: true,
             json: sinon.stub().resolves(mockConfig),
         });
 
@@ -59,8 +67,4 @@ describe("Config Fetch Tests", () => {
         expect(config).to.be.deep.equal(existingConfigFromPreviousTest);
         expect(config).to.not.deep.equal(mockConfig);
     });
-
-
-
-
 });

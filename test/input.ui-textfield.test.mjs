@@ -3,7 +3,7 @@ import "./domSetup.js";
 import UiTextField from "../src/components/input/textfield/ui-textfield.js";
 import { dependencyInjection } from "./mockDependencies.js";
 
-describe("UiTextField (Real Templates)", async () => {
+describe("UiTextField", async () => {
     let testContainer;
 
     beforeEach(() => {
@@ -15,7 +15,7 @@ describe("UiTextField (Real Templates)", async () => {
         document.body.removeChild(testContainer);
     });
 
-    describe("Textfield as used by consumer", () => {
+    describe("Class object", () => {
         it("should create a textfield with correct properties", async () => {
             const textfield = new UiTextField({
                 label: "Name",
@@ -23,14 +23,44 @@ describe("UiTextField (Real Templates)", async () => {
                 value: "Sarah",
                 dependencies: dependencyInjection,
             });
-            const sometemplate = dependencyInjection.loadTemplate(
-                    `${dependencyInjection.getConfig().templateRoot}input/textfield.html`
-            );
-            dependencyInjection.renderTpl(testContainer, sometemplate, {id: "555", label: "hey"})
-            await textfield.render(testContainer)
-            console.log(textfield.targetNode.outerHTML)
+
             expect(textfield.label).to.be.equal("Name");
+            expect(textfield.dataName).to.be.equal("f_name");
+            expect(textfield.value).to.be.equal("Sarah");
             expect(textfield.id).to.be.equal("mock-id");
+        });
+    });
+    describe("Rendering", () => {
+        it("should show loading template during loading state", async () => {
+            const textfield = new UiTextField({
+                label: "First Name",
+                dataName: "name",
+                value: "Bob",
+                dependencies: dependencyInjection,
+            });
+
+            const mockElement = document.createElement("div");
+            textfield.componentNode = mockElement;
+            await textfield.setLoading(true).then(() => {
+                expect(textfield.componentNode.outerHTML).to.contain("loading");
+            });
+        });
+
+        it("should fill componentNode", async () => {
+            const textfield = new UiTextField({
+                label: "First Name",
+                dataName: "name",
+                value: "Bob",
+                dependencies: dependencyInjection,
+            });
+
+            await textfield.render(testContainer).then(
+                () => {
+                    expect(textfield.componentNode.outerHTML).to.contain("sv-ui__input-textfield")
+                }
+            );
+
+            
         });
     });
 });
