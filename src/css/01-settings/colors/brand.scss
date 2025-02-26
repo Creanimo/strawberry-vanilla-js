@@ -1,21 +1,24 @@
 //
-// Light theme
+// Light mode
 //
 
-// main colors from strong to weak
-$light_loud-color-bg: ; // usually a high contrast stopper
-$light_loud-color-text: ;
-
-$light_melodic-color-bg: ; // usually the brand color
-$light_melodic-color-text: ;
-
-$light_quiet-color-bg: ;
-$light_quiet-color-text: ;
-
 // shades near the quiet end - low contrast to page
-$light_gentle-shade_loud: ;
-$light_gentle-shade_silent: ; // brightest value of the light theme
+$lmode_gentle-shade_loud: #dfc296;
+$lmode_gentle-shade_quiet: #fff0cd;
+$lmode_gentle-shade_silent: #FFF6EB; // brightest value of the light theme
 
-// shades near the light end - high contrast to page
-$light_strong-shade_loud: ;
-$light_strong-shade_quiet: ;
+// shades near the loud end - high contrast to page
+$lmode_strong-shade_loud: #1C2541;
+$lmode_strong-shade_quiet: #363e4e;
+
+// main colors from strong to weak
+$lmode_loud-color-bg: #cc0066; // usually a high contrast stopper
+$lmode_loud-color-text: $mode_gentle-shade_silent;
+
+$lmode_melodic-color-bg: #52B792; // usually the brand color
+$lmode_melodic-color-text: $lmode_strong-shade_loud;
+
+$lmode_quiet-color-bg: #f8c662;
+$lmode_quiet-color-text: $lmode_strong-shade_loud;
+
+

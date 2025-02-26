@@ -8,10 +8,11 @@
     "demo": "http-server -c-1",
     "test": "mocha 'test/*.test.mjs'",
     "clean:dist": "rm -rf dist && mkdir dist",
+    "sass": "./node_modules/.bin/sass ./src/css/strawberry-vanilla-ui.scss ./src/css/strawberry-vanilla-ui.css",
     "copy:assets": "cp -r src/templates dist/ && cp -r src/css dist/",
     "copy:config": "cp src/sv-ui-config.json dist/sv-ui-config.json",
     "build:rollup": "rollup -c",
-    "build": "npm run clean:dist && npm run copy:assets && npm run copy:config && npm run build:rollup"
+    "build": "npm run clean:dist && npm run sass && npm run copy:assets && npm run copy:config && npm run build:rollup"
   },
   "repository": {
     "type": "git",
