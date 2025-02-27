@@ -1,0 +1,5 @@
+@use "../01-settings" as s;
+
+$padding_tight: s.$spacing_tight s.$spacing_comfy;
+$padding_comfy: s.$spacing_comfy s.$spacing_relaxed;
+$padding_relaxed: s.$spacing_relaxed s.$spacing_loose;

@@ -1,0 +1,24 @@
+@use "../../01-settings" as s;
+@use "../../04-layout/spacings" as l-sp;
+
+.sv-ui__input-textfield {
+  display: grid;
+  grid-template-areas:  "label label"
+                        "input check"
+                        "alert alert";
+  grid-template-columns: 1fr max-content;
+  grid-gap: s.$spacing_comfy;
+  max-width: 500px;
+
+  label {
+    grid-area: label;
+  }
+
+  input {
+    grid-area: input;
+  }
+
+  .validationAlert {
+    grid-area: alert;
+  }
+}

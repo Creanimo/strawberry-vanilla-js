@@ -1,0 +1,9 @@
+@use "../01-settings/" as s;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: s.$lmode_gentle-shade_silent;
+}

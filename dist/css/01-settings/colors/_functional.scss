@@ -1,0 +1,14 @@
+@use "./brand.scss" as brand;
+
+$lmode_success-color: #007924;
+$dmode_success-color: #50ff6a;
+
+$lmode_error-color: #be2f10;
+$dmode_error-color: #ff6279;
+
+$lmode_info-color: brand.$lmode_quiet-color-bg;
+$lmode_info-color-contrast: brand.$lmode_quiet-color-text;
+
+// accessibility-highlight
+$lmode_a11y-highlight-color: #0044ab;
+$dmode_a11y-highlight-color: #37c3fc;
