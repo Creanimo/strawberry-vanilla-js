@@ -1,4 +1,5 @@
 @use "../../01-settings" as s;
+@use "../../02-patterns/input-boxes" as inp-bx;
 @use "../../04-layout/spacings" as l-sp;
 
 .sv-ui__input-textfield {
@@ -15,6 +16,7 @@
   }
 
   input {
+    @extend %input_one-liner-box;
     grid-area: input;
   }
 

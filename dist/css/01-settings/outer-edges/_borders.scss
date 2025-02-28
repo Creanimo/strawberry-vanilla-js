@@ -1,0 +1,4 @@
+@use "../../01-settings/colors/_brand.scss" as col-brand;
+
+$border-width: 2px;
+$lmode_border-loud: $border-width solid col-brand.$lmode_strong-shade_loud;

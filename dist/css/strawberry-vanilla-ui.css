@@ -41,6 +41,14 @@ input {
   min-height: 32px;
 }
 
+.sv-ui__input-textfield input {
+  min-height: 32px;
+  border: 2px solid #1C2541;
+  border-radius: 4px;
+  padding: 6px 12px;
+  background-color: #FFF6EB;
+}
+
 .sv-ui__input-textfield {
   display: grid;
   grid-template-areas: "label label" "input check" "alert alert";
