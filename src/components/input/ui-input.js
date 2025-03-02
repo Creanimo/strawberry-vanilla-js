@@ -91,12 +91,16 @@ class UiInput extends UiComponent {
 
     async validateInput() {
         if (this.validationFunction) {
-            const previousResult = this.validationResult;
-            this.validationResult = this.validationFunction(this.value);
-            if (previousResult.message !== this.validationResult.message) {
-                if (this.validationResult) {
-                    await this.validationResultToAlertChild();
-                }
+            this._dependencies.log.debug(`Validating ${this.type} ${this.id}`);
+            const previousResult = structuredClone(this.validationResult);
+            this.validationResult = await this.validationFunction(this.value);
+            this._dependencies.log.debug(
+                `Validation result of ${this.type} ${this.id}\nPrevious: ${JSON.stringify(previousResult)}\nNow: ${JSON.stringify(this.validationResult)}`
+            );
+            if (previousResult == null
+                || JSON.stringify(previousResult) !== JSON.stringify(this.validationResult)
+            ) {
+                await this.validationResultToAlertChild();
             }
         } else {
             return;

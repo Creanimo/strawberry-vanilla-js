@@ -1,5 +1,5 @@
 @use "../../01-settings" as s;
-@use "../../02-patterns/input-boxes" as inp-bx;
+@use "../../02-patterns/extend/input-boxes" as inp-bx;
 @use "../../04-layout/spacings" as l-sp;
 
 .sv-ui__input-textfield {
@@ -8,8 +8,7 @@
                         "input check"
                         "alert alert";
   grid-template-columns: 1fr max-content;
-  grid-gap: s.$spacing_comfy;
-  max-width: 500px;
+  max-width: s.$form-width;
 
   label {
     grid-area: label;
@@ -17,10 +16,28 @@
 
   input {
     @extend %input_one-liner-box;
+    margin-top: s.$spacing_tight;
     grid-area: input;
   }
 
   .validationAlert {
     grid-area: alert;
+    > * {
+      margin-top: s.$spacing_tight;
+      padding: l-sp.$padding_tight;
+      border-radius: s.$border-radius_decorative-small;
+    }
+    .info {
+      background-color: s.$lmode_info-color;
+      color: s.$lmode_info-color-contrast;
+    }
+    .error, .warning {
+      color: s.$lmode_gentle-shade_silent;
+      background-color: s.$lmode_error-color;
+    }
+    .success {
+      color: s.$lmode_gentle-shade_silent;
+      background-color: s.$lmode_success-color;
+    }
   }
 }

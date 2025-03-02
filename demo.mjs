@@ -24,7 +24,7 @@ loadConfig().then(() => {
             validationFunction: textfieldValidation,
         });
 
-        demoTextfield.render(document.body);
+        demoTextfield.render(document.getElementById("example-textfield"));
     }
     exampleTextfield();
 
@@ -33,6 +33,6 @@ loadConfig().then(() => {
         code: String(exampleTextfield),
         language: "javascript",
     })
-    demoTextfieldCode.render(document.body)
+    demoTextfieldCode.render(document.getElementById("example-textfield__code"))
 
 });

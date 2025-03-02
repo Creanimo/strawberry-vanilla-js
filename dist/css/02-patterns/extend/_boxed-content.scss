@@ -1,0 +1,13 @@
+@use "../../01-settings" as s;
+@use "../../04-layout/_spacings.scss" as l-sp;
+
+%scroll-box {
+  overflow: auto;
+  max-height: 600px;
+}
+
+%gentle-box {
+  padding: l-sp.$padding_comfy;
+  background-color: s.$lmode_gentle-shade_quiet;
+  border-radius: s.$border-radius_decorative-large;
+}

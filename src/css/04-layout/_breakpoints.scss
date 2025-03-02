@@ -1,0 +1,30 @@
+@use 'sass:map';
+
+//== Media queries breakpoints
+//
+
+// like in Bootstrap 5
+$grid-breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1400px
+);
+
+
+// end of section based on bootstrap 3
+
+// note that this excludes print!
+@mixin on-screen-size($size) {
+  @if $size == small {
+    @media screen and (max-width: map.get($grid-breakpoints, sm)) { @content; };
+  } @else if $size == medium {
+    @media screen and (min-width: (map.get($grid-breakpoints, sm)) + 1px) { @content; };
+  } @else if $size == large {
+    @media screen and (min-width: (map.get($grid-breakpoints, md)) + 1px) { @content; };
+  } @else {
+    @error("Invalid input for on-screen-size mixin.");
+  }
+}

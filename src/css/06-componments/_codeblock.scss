@@ -1,0 +1,12 @@
+@use "../01-settings" as s;
+@use "../02-patterns/extend/boxed-content" as box-c;
+
+.sv-ui__codeBlock {
+  pre {
+    display: block;
+    margin-top: s.$spacing_tight;
+    border: s.$lmode_border-quiet;
+    @extend %scroll-box;
+    @extend %gentle-box;
+  }
+}
