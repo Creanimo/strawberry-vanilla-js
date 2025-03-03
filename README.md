@@ -3,6 +3,18 @@
 This UI framework uses vanilla ES6 JavaScript only (no React).
 It's still heavily work in progress at the moment.
 
+## Components
+
+This is the current state of all components
+
+| Component | Usable | Unit Tests | in demo |
+| --- | --- | --- | --- |
+UiInput/UiTextField | 🟢 | 🟡 | 🟢 |
+UiAlertMsg | 🟢 | 🔴 | 🟡 |
+UiCodeBlock | 🟢 | 🔴 | 🟡 |
+
+🟡 in demo = some UI components use it, but it doesn't have its own section.
+
 ## Demo
 
 See all UI components in action by running the demo.
@@ -23,7 +35,7 @@ The demo has log level "info", so you can see debug and error messages in the co
 
 ## Use UI Components in your app
 
-- Add dist folder to your project.
+- Add dist folder to your project. This is the content of what will later be available as a release. You can rename it e.g. to sv-ui/
 - Copy sv-ui-config.json next to your entry point (e.g. my-app.js),
 - open it and change templatePath, so it points to the templates/ folder.
 - Initialize config in the entry point of your app:
