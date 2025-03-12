@@ -1,4 +1,5 @@
 import Mustache from "mustache";
+import { htmlStringToElement } from "./htmlStringToElement";
 
 /**
  * Loads an HTML template from a given file path.
@@ -14,10 +15,9 @@ async function loadTemplate(templatePath) {
     return await response.text();
 }
 
-function renderTpl(htmlNode, template, renderProps = {}) {
-    htmlNode.innerHTML = "";
+function renderTpl(template, renderProps = {}) {
     const htmlStr = Mustache.render(template, renderProps);
-    htmlNode.innerHTML = htmlStr;
+    return htmlStringToElement(htmlStr);
 }
 
 export { loadTemplate, renderTpl };

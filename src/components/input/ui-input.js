@@ -9,7 +9,7 @@ class UiInput extends UiComponent {
      * @param {string} label
      * @param {string} value
      * @param {string} dataName
-     * @param {() => void | null} callOnBlur
+     * @param {() => void | null} callOnAction
      */
     constructor({
         id = null,
@@ -17,10 +17,10 @@ class UiInput extends UiComponent {
         dataName = label,
         value,
         fetchFunction = null,
-        callOnBlur = null,
+        dependencies = dependencyInjection,
+        callOnAction = null,
         validationFunction = null,
         validationResult = null,
-        dependencies = dependencyInjection,
     }) {
         super({ id, label, fetchFunction, dependencies });
         /** @type {string} */
@@ -33,7 +33,7 @@ class UiInput extends UiComponent {
         this.dataName = dataName;
 
         /** @type {() => void | null} */
-        this.callOnBlur = callOnBlur;
+        this.callOnAction = callOnAction;
         this.validationFunction = validationFunction;
         this.validationResult = validationResult;
     }
@@ -43,6 +43,15 @@ class UiInput extends UiComponent {
             ...super.getRenderProperties(),
             value: this.value,
         };
+    }
+
+    getData() {
+        return {
+            id: this.id,
+            type: this.type,
+            key: this.dataName,
+            value: this.value,
+        }
     }
 
     async render(targetNode) {
@@ -65,8 +74,8 @@ class UiInput extends UiComponent {
 
         const onBlur = async () => {
             this.value = inputElement.value;
-            if (this.callOnBlur) {
-                this.callOnBlur();
+            if (this.callOnAction) {
+                this.callOnAction();
             }
             console.log(`Input UI Component now has value: ${this.value}`);
             if (this.validationFunction) {

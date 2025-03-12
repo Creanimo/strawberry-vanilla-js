@@ -789,6 +789,18 @@ mustache.Context = Context;
 mustache.Writer = Writer;
 
 /**
+ * Convert a html string to DOM
+ * @param {string} htmlString 
+ * @returns {Node}
+ */
+function htmlStringToElement(htmlString) {
+    const template = document.createElement('template');
+    template.innerHTML = htmlString.trim();
+    const element = template.content.firstChild;
+    return element;
+}
+
+/**
  * Loads an HTML template from a given file path.
  * @param {string} templatePath - The path to the template file.
  * @returns {Promise<string>} The template content as a string.
@@ -802,10 +814,9 @@ async function loadTemplate(templatePath) {
     return await response.text();
 }
 
-function renderTpl(htmlNode, template, renderProps = {}) {
-    htmlNode.innerHTML = "";
+function renderTpl(template, renderProps = {}) {
     const htmlStr = mustache.render(template, renderProps);
-    htmlNode.innerHTML = htmlStr;
+    return htmlStringToElement(htmlStr);
 }
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -5361,7 +5372,7 @@ class UiComponent {
         return {
             id: this.id,
             label: this.label,
-            dataName: this.dataName,
+            type: this.type,
         };
     }
 
@@ -5403,7 +5414,11 @@ class UiComponent {
             const loadingTemplate = await this._dependencies.loadTemplate(
                 `${this._dependencies.getConfig().templateRoot}loading.html`,
             );
-            await this._dependencies.renderTpl(this.componentNode, loadingTemplate);
+            const loadingNode = await this._dependencies.renderTpl(loadingTemplate);
+            if (this.targetNode) {
+                this.targetNode.innerHTML = "";
+                this.targetNode.appendChild(loadingNode);
+            }
         }
         this.loading = state;
         this._dependencies.log.trace(
@@ -5420,7 +5435,6 @@ class UiComponent {
         }
 
         await this.setLoading(true);
-        targetNode.appendChild(this.componentNode);
         this._dependencies.log.trace(`${this.type} with ID ${this.id}: append loading html done.`);
 
         try {
@@ -5432,12 +5446,13 @@ class UiComponent {
                 propCollectionToRender = this.getRenderProperties();
             }
 
-            const tempNode = this.createContainer();
+            const tempNode = document.createElement("template");
 
             // Render the actual component
             const componentTemplate = await this._dependencies.loadTemplate(this.templatePath);
-            await this._dependencies.renderTpl(tempNode, componentTemplate, propCollectionToRender);
-            this._dependencies.log.trace(`${this.type} with ID ${this.id}: rendered tempNode.`);
+            const outerComponent = await this._dependencies.renderTpl(componentTemplate, propCollectionToRender);
+            tempNode.append(outerComponent);
+            this._dependencies.log.trace(tempNode, `${this.type} with ID ${this.id}: rendered tempNode.`);
 
             if (this.permanentChildren) {
                 await this.applyChildren(tempNode, this.permanentChildren);
@@ -5449,15 +5464,18 @@ class UiComponent {
 
             this._dependencies.log.trace(
                 tempNode,
-                "${this.type} with ID ${this.id}: Assembled rendering in temp Node",
+                `${this.type} with ID ${this.id}: Assembled rendering in temp Node`,
             );
-            this.componentNode.replaceWith(tempNode);
+
+            this.componentNode = tempNode.firstChild;
+            targetNode.innerHTML = "";
+            targetNode.appendChild(this.componentNode);
+
             if (document.getElementById(this.id)) {
                 this._dependencies.log.info(
                     `${this.type} with ID ${this.id}: replaced componentNode with tempNode in DOM.`,
                 );
             }
-            this.componentNode = tempNode;
         } catch (error) {
             console.error("Render error:", error);
         } finally {
@@ -5544,6 +5562,7 @@ class UiAlertMsg extends UiComponent {
     getRenderProperties() {
         return {
             ...super.getRenderProperties(),
+            alertType: this.alertType,
             message: this.message,
         }
     }
@@ -5556,7 +5575,7 @@ class UiInput extends UiComponent {
      * @param {string} label
      * @param {string} value
      * @param {string} dataName
-     * @param {() => void | null} callOnBlur
+     * @param {() => void | null} callOnAction
      */
     constructor({
         id = null,
@@ -5564,10 +5583,10 @@ class UiInput extends UiComponent {
         dataName = label,
         value,
         fetchFunction = null,
-        callOnBlur = null,
+        dependencies = dependencyInjection,
+        callOnAction = null,
         validationFunction = null,
         validationResult = null,
-        dependencies = dependencyInjection,
     }) {
         super({ id, label, fetchFunction, dependencies });
         /** @type {string} */
@@ -5580,7 +5599,7 @@ class UiInput extends UiComponent {
         this.dataName = dataName;
 
         /** @type {() => void | null} */
-        this.callOnBlur = callOnBlur;
+        this.callOnAction = callOnAction;
         this.validationFunction = validationFunction;
         this.validationResult = validationResult;
     }
@@ -5590,6 +5609,15 @@ class UiInput extends UiComponent {
             ...super.getRenderProperties(),
             value: this.value,
         };
+    }
+
+    getData() {
+        return {
+            id: this.id,
+            type: this.type,
+            key: this.dataName,
+            value: this.value,
+        }
     }
 
     async render(targetNode) {
@@ -5612,8 +5640,8 @@ class UiInput extends UiComponent {
 
         const onBlur = async () => {
             this.value = inputElement.value;
-            if (this.callOnBlur) {
-                this.callOnBlur();
+            if (this.callOnAction) {
+                this.callOnAction();
             }
             console.log(`Input UI Component now has value: ${this.value}`);
             if (this.validationFunction) {

@@ -42,6 +42,7 @@ class UiAlertMsg extends UiComponent {
     getRenderProperties() {
         return {
             ...super.getRenderProperties(),
+            alertType: this.alertType,
             message: this.message,
         }
     }

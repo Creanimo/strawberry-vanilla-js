@@ -71,7 +71,7 @@ class UiComponent {
         return {
             id: this.id,
             label: this.label,
-            dataName: this.dataName,
+            type: this.type,
         };
     }
 
@@ -113,7 +113,11 @@ class UiComponent {
             const loadingTemplate = await this._dependencies.loadTemplate(
                 `${this._dependencies.getConfig().templateRoot}loading.html`,
             );
-            await this._dependencies.renderTpl(this.componentNode, loadingTemplate);
+            const loadingNode = await this._dependencies.renderTpl(loadingTemplate);
+            if (this.targetNode) {
+                this.targetNode.innerHTML = "";
+                this.targetNode.appendChild(loadingNode);
+            }
         }
         this.loading = state;
         this._dependencies.log.trace(
@@ -130,7 +134,6 @@ class UiComponent {
         }
 
         await this.setLoading(true);
-        targetNode.appendChild(this.componentNode);
         this._dependencies.log.trace(`${this.type} with ID ${this.id}: append loading html done.`);
 
         try {
@@ -142,12 +145,13 @@ class UiComponent {
                 propCollectionToRender = this.getRenderProperties();
             }
 
-            const tempNode = this.createContainer();
+            const tempNode = document.createElement("template")
 
             // Render the actual component
             const componentTemplate = await this._dependencies.loadTemplate(this.templatePath);
-            await this._dependencies.renderTpl(tempNode, componentTemplate, propCollectionToRender);
-            this._dependencies.log.trace(`${this.type} with ID ${this.id}: rendered tempNode.`);
+            const outerComponent = await this._dependencies.renderTpl(componentTemplate, propCollectionToRender);
+            tempNode.append(outerComponent);
+            this._dependencies.log.trace(tempNode, `${this.type} with ID ${this.id}: rendered tempNode.`);
 
             if (this.permanentChildren) {
                 await this.applyChildren(tempNode, this.permanentChildren);
@@ -159,15 +163,18 @@ class UiComponent {
 
             this._dependencies.log.trace(
                 tempNode,
-                "${this.type} with ID ${this.id}: Assembled rendering in temp Node",
+                `${this.type} with ID ${this.id}: Assembled rendering in temp Node`,
             );
-            this.componentNode.replaceWith(tempNode);
+
+            this.componentNode = tempNode.firstChild;
+            targetNode.innerHTML = "";
+            targetNode.appendChild(this.componentNode);
+
             if (document.getElementById(this.id)) {
                 this._dependencies.log.info(
                     `${this.type} with ID ${this.id}: replaced componentNode with tempNode in DOM.`,
                 );
             }
-            this.componentNode = tempNode;
         } catch (error) {
             console.error("Render error:", error);
         } finally {
