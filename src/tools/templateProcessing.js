@@ -1,5 +1,5 @@
 import Mustache from "mustache";
-import { htmlStringToElement } from "./htmlStringToElement";
+import { htmlStringToElement } from "./htmlStringToElement.js";
 
 /**
  * Loads an HTML template from a given file path.

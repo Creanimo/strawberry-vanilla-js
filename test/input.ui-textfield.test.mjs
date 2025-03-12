@@ -39,8 +39,6 @@ describe("UiTextField", async () => {
                 dependencies: dependencyInjection,
             });
 
-            const mockElement = document.createElement("div");
-            textfield.componentNode = mockElement;
             await textfield.setLoading(true).then(() => {
                 expect(textfield.componentNode.outerHTML).to.contain("loading");
             });

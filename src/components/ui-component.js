@@ -88,24 +88,6 @@ class UiComponent {
     }
 
     /**
-     * @param {HTMLElement} node
-     */
-    set componentNode(node) {
-        this._componentNode = node || this.createContainer();
-    }
-
-    get componentNode() {
-        return this._componentNode;
-    }
-
-    createContainer() {
-        const container = document.createElement("div");
-        container.id = this.id;
-        container.classList.add(this.type);
-        return container;
-    }
-
-    /**
      * @param {boolean} state
      */
     async setLoading(state) {
@@ -114,9 +96,10 @@ class UiComponent {
                 `${this._dependencies.getConfig().templateRoot}loading.html`,
             );
             const loadingNode = await this._dependencies.renderTpl(loadingTemplate);
+            this.componentNode = await loadingNode;
             if (this.targetNode) {
                 this.targetNode.innerHTML = "";
-                this.targetNode.appendChild(loadingNode);
+                this.targetNode.appendChild(this.componentNode);
             }
         }
         this.loading = state;
