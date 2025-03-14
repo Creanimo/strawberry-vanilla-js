@@ -5396,17 +5396,27 @@ class UiComponent {
             const loadingTemplate = await this._dependencies.loadTemplate(
                 `${this._dependencies.getConfig().templateRoot}loading.html`,
             );
-            const loadingNode = await this._dependencies.renderTpl(loadingTemplate);
+            const loadingNode = await this._dependencies.renderTpl(loadingTemplate, {id: this.id});
             this.componentNode = await loadingNode;
+
+            this.removeFromDom();
+
             if (this.targetNode) {
-                this.targetNode.innerHTML = "";
                 this.targetNode.appendChild(this.componentNode);
             }
-        }
+        } 
+
         this.loading = state;
         this._dependencies.log.trace(
             `${this.type} with ID ${this.id}: loading state is ${this.loading}`,
         );
+    }
+
+    removeFromDom() {
+        if (document.getElementById(this.id)) {
+            const staleComponent = document.getElementById(this.id); 
+            staleComponent.remove();
+        }
     }
 
     /**
@@ -5451,7 +5461,7 @@ class UiComponent {
             );
 
             this.componentNode = tempNode.firstChild;
-            targetNode.innerHTML = "";
+            this.removeFromDom();
             targetNode.appendChild(this.componentNode);
 
             if (document.getElementById(this.id)) {
@@ -5564,7 +5574,7 @@ class UiInput extends UiComponent {
         id = null,
         label,
         dataName = label,
-        value,
+        value = null,
         fetchFunction = null,
         dependencies = dependencyInjection,
         callOnAction = null,
@@ -5591,6 +5601,7 @@ class UiInput extends UiComponent {
         return {
             ...super.getRenderProperties(),
             value: this.value,
+            dataName: this.dataName,
         };
     }
 
@@ -5695,6 +5706,66 @@ class UiTextField extends UiInput {
             ...super.getRenderProperties(),
             textfieldId: this.textfieldId,
         } 
+    }
+}
+
+/**
+ * @typedef {"loud" | "melodic" | "quiet" | "textlink" } ButtonPriority
+ */
+
+class UiButton extends UiInput {
+    /** 
+     * Buttons can either have a linkHref or a callOnAction(), not both
+     * @param {ButtonPriority} buttonPriority
+     */
+    constructor({
+        id = null,
+        label,
+        dataName = null,
+        value = null,
+        fetchFunction = null,
+        dependencies = dependencyInjection,
+        callOnAction = null,
+        buttonPriority = "quiet",
+        linkHref = null,
+    }) {
+        super({
+            id,
+            label,
+            dataName,
+            value,
+            fetchFunction,
+            dependencies,
+            callOnAction,
+        });
+        this.type = "sv-ui__input-button";
+        this.templatePath = `${this._dependencies.getConfig().templateRoot}input/button.html`;
+        this.buttonPriority = buttonPriority;
+        this.linkHref = linkHref;
+
+        if (this.linkHref && this.callOnAction) {
+            this._dependencies.log.error(
+                "UiButton can either be a link and have a linkHref or be a button with a callOnAction(), but not both."
+            );
+        }
+
+        if (this.linkHref) {
+            this._isLink = true;
+        } else {
+            this._isLink = false;
+        }
+    }
+    
+    getRenderProperties() {
+        return {
+            ...super.getRenderProperties(),
+            buttonPriority: this.buttonPriority, 
+            isLink: this._isLink,
+        }
+    }
+
+    async setEventListeners() {
+        
     }
 }
 
@@ -8419,5 +8490,5 @@ class UiCodeBlock extends UiComponent {
     }
 }
 
-export { UiCodeBlock, UiTextField, getConfig, loadConfig };
+export { UiButton, UiCodeBlock, UiTextField, getConfig, loadConfig };
 //# sourceMappingURL=index.esm.js.map

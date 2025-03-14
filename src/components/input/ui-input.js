@@ -15,7 +15,7 @@ class UiInput extends UiComponent {
         id = null,
         label,
         dataName = label,
-        value,
+        value = null,
         fetchFunction = null,
         dependencies = dependencyInjection,
         callOnAction = null,
@@ -42,6 +42,7 @@ class UiInput extends UiComponent {
         return {
             ...super.getRenderProperties(),
             value: this.value,
+            dataName: this.dataName,
         };
     }
 

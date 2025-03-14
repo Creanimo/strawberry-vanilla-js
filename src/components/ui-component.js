@@ -95,17 +95,27 @@ class UiComponent {
             const loadingTemplate = await this._dependencies.loadTemplate(
                 `${this._dependencies.getConfig().templateRoot}loading.html`,
             );
-            const loadingNode = await this._dependencies.renderTpl(loadingTemplate);
+            const loadingNode = await this._dependencies.renderTpl(loadingTemplate, {id: this.id});
             this.componentNode = await loadingNode;
+
+            this.removeFromDom();
+
             if (this.targetNode) {
-                this.targetNode.innerHTML = "";
                 this.targetNode.appendChild(this.componentNode);
             }
-        }
+        } 
+
         this.loading = state;
         this._dependencies.log.trace(
             `${this.type} with ID ${this.id}: loading state is ${this.loading}`,
         );
+    }
+
+    removeFromDom() {
+        if (document.getElementById(this.id)) {
+            const staleComponent = document.getElementById(this.id); 
+            staleComponent.remove();
+        }
     }
 
     /**
@@ -150,7 +160,7 @@ class UiComponent {
             );
 
             this.componentNode = tempNode.firstChild;
-            targetNode.innerHTML = "";
+            this.removeFromDom();
             targetNode.appendChild(this.componentNode);
 
             if (document.getElementById(this.id)) {

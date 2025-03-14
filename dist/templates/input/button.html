@@ -1,0 +1,2 @@
+{{#isLink}}<a id="{{id}}" class="{{type}} {{buttonPriority}}" href="{{linkHref}}">{{label}}</a>{{/isLink}}
+{{^isLink}}<button id="{{id}}" class="{{type}} {{buttonPriority}}" type="button" {{#dataName}}name="{{dataName}}"{{/dataName}} {{#value}}value="{{value}}"{{/value}}>{{label}}</button>{{/isLink}}

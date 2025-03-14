@@ -1,4 +1,4 @@
-import { loadConfig, UiTextField, UiCodeBlock } from "./dist/index.esm.js";
+import { loadConfig, UiTextField, UiCodeBlock, UiButton } from "./dist/index.esm.js";
 
 loadConfig().then(() => {
     function exampleTextfield() {
@@ -33,6 +33,37 @@ loadConfig().then(() => {
         code: String(exampleTextfield),
         language: "javascript",
     })
+
     demoTextfieldCode.render(document.getElementById("example-textfield__code"))
 
+
+    function exampleButtons() {
+        const buttonLoud = new UiButton({
+            label: "Click me",
+            buttonPriority: "loud",
+        })
+
+        const buttonMelodic = new UiButton({
+            label: "Click me",
+            buttonPriority: "melodic",
+        })
+
+        const buttonQuiet = new UiButton({
+            label: "Click me",
+            buttonPriority: "quiet",
+        })
+
+        buttonLoud.render(document.getElementById("example-buttons"));
+        buttonMelodic.render(document.getElementById("example-buttons"));
+        buttonQuiet.render(document.getElementById("example-buttons"));
+    }
+    exampleButtons();
+
+    const demoButtonsCode = new UiCodeBlock({
+        label: "Code of Buttons Example",
+        code: String(exampleButtons),
+        language: "javascript",
+    })
+    
+    demoButtonsCode.render(document.getElementById("example-buttons__code"))
 });
