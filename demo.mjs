@@ -53,9 +53,11 @@ loadConfig().then(() => {
             buttonPriority: "quiet",
         })
 
-        buttonLoud.render(document.getElementById("example-buttons"));
-        buttonMelodic.render(document.getElementById("example-buttons"));
-        buttonQuiet.render(document.getElementById("example-buttons"));
+        buttonLoud.render(document.getElementById("example-buttons")).then(
+            buttonMelodic.render(document.getElementById("example-buttons"))
+        ).then(
+            buttonQuiet.render(document.getElementById("example-buttons"))
+        );
     }
     exampleButtons();
 

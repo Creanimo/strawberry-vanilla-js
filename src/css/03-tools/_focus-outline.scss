@@ -1,0 +1,116 @@
+@use "../01-settings" as s;
+
+$focus-color: s.$lmode_a11y-highlight-color;
+$focus-protection-color: s.$lmode_a11y-highlight-color-contrast;
+
+// The offset should only be used if the contrast between the focus outline and the component is insufficient.
+$focus-outline-inner-width: 3px;
+$focus-outline-outer-width: 2px;
+
+// KEYBOARD FOCUS DEFAULT
+// This is the mixin you should be using if possible
+@mixin il-focus($focus-outline-inner-width: $focus-outline-inner-width, $focus-outline-outer-width: $focus-outline-outer-width){
+	$focus-outline-inner: $focus-outline-inner-width solid $focus-color;
+	$focus-outline-outer: $focus-outline-outer-width solid $focus-protection-color;
+	&:focus {
+		outline: none;
+    	outline-offset: 0px;
+	}
+	&:focus-visible {
+		position: relative;
+		// outermost protection color line
+		outline: $focus-outline-outer;
+		outline-offset: $focus-outline-outer-width + $focus-outline-inner-width;
+
+		&::after {
+			content: " ";
+			position: absolute;
+			top: -$focus-outline-outer-width;
+			left: -$focus-outline-outer-width;
+			right: -$focus-outline-outer-width;
+			bottom: -$focus-outline-outer-width;
+			// innermost protection color line
+			border: $focus-outline-outer;
+			// middle focus line
+			outline: $focus-outline-inner;
+		}
+	}
+}
+
+// KEYBOARD FOCUS FOR BUTTONS, INPUTS AND ELEMENTS WITH :AFTER
+// some elements like buttons and input field cannot display the il-focus mixin because of the :after element
+// in this case use this mixin instead
+@mixin il-focus-outline-only($clearAfter: false, $focus-outline-inner-width: $focus-outline-inner-width, $focus-outline-outer-width: $focus-outline-outer-width) {
+	$focus-outline-inner: $focus-outline-inner-width solid $focus-color;
+	$focus-outline-outer: $focus-outline-outer-width solid $focus-protection-color;
+	&:focus-visible{
+		outline: $focus-outline-inner;
+		box-shadow: inset 0px 0px 0px $focus-outline-outer-width $focus-protection-color, 0px 0px 0px ($focus-outline-outer-width + $focus-outline-inner-width) $focus-protection-color;
+		@if $clearAfter {
+			&::after {
+				content: none;
+			}
+		}
+	}
+}
+
+// KEYBOARD FOCUS FOR Elements, that contain Elements that get Focus
+// some elements like file buttons and input field cannot display the il-focus mixin because they do not get focus directly
+// in this case use this mixin instead
+@mixin il-focus-within-outline-only($clearAfter: false, $focus-outline-inner-width: $focus-outline-inner-width, $focus-outline-outer-width: $focus-outline-outer-width) {
+	$focus-outline-inner: $focus-outline-inner-width solid $focus-color;
+	$focus-outline-outer: $focus-outline-outer-width solid $focus-protection-color;
+	&:focus-within{
+		outline: $focus-outline-inner;
+		box-shadow: inset 0px 0px 0px $focus-outline-outer-width $focus-protection-color, 0px 0px 0px (($focus-outline-outer-width*2) + $focus-outline-inner-width) red; // $focus-protection-color
+		@if $clearAfter {
+			&::after {
+				content: none;
+			}
+		}
+	}
+}
+
+// KEYBOARD FOCUS FOR ELEMENTS AT THE EDGE AND MULTI-LINE TEXT
+// some elements at the edge do not show the focus outline because it's already offscreen
+// or for inline elements that break into multiple lines
+// in these cases use this mixin instead
+@mixin il-focus-border-only($clearAfter: false, $focus-outline-inner-width: $focus-outline-inner-width, $focus-outline-outer-width: $focus-outline-outer-width) {
+	$focus-outline-inner: $focus-outline-inner-width solid $focus-color;
+	$focus-outline-outer: $focus-outline-outer-width solid $focus-protection-color;
+	&:focus-visible {
+		outline: none;
+		border: $focus-outline-inner;
+		box-shadow: inset 0px 0px 0px $focus-outline-outer-width $focus-protection-color, 0px 0px 0px $focus-outline-outer-width $focus-protection-color;
+		@if $clearAfter {
+			&::after {
+				content: none;
+			}
+		}
+	}
+}
+
+@mixin clear-focus-for-override($clearAfter: false) {
+	&:focus {
+		border: inherit;
+		box-shadow: inherit;
+		outline: none;
+    	outline-offset: 0px;
+		@if $clearAfter {
+			&::after {
+				content: none;
+			}
+		}
+	}
+	&:focus-visible {
+		border: inherit;
+		box-shadow: inherit;
+		outline: none;
+    	outline-offset: 0px;
+		@if $clearAfter {
+			&::after {
+				content: none;
+			}
+		}
+	}
+}
