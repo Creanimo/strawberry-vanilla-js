@@ -37,7 +37,7 @@ loadConfig().then(() => {
     demoTextfieldCode.render(document.getElementById("example-textfield__code"))
 
 
-    function exampleButtons() {
+    async function exampleButtons() {
         const buttonLoud = new UiButton({
             label: "Click me",
             buttonPriority: "loud",
@@ -53,11 +53,9 @@ loadConfig().then(() => {
             buttonPriority: "quiet",
         })
 
-        buttonLoud.render(document.getElementById("example-buttons")).then(
-            buttonMelodic.render(document.getElementById("example-buttons"))
-        ).then(
-            buttonQuiet.render(document.getElementById("example-buttons"))
-        );
+        await buttonLoud.render(document.getElementById("example-buttons"));
+        await buttonMelodic.render(document.getElementById("example-buttons"));
+        await buttonQuiet.render(document.getElementById("example-buttons"));
     }
     exampleButtons();
 

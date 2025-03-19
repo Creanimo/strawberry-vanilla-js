@@ -2,6 +2,8 @@
 @use "../../03-tools/button-generator" as btn-gen with(
     $border-radius: s.$border-radius_decorative-small,
     $input-field-height: s.$input_min-height,
+    $set-shadow-inset-hover: true,
+    $set-shadow-inset-pressed: true,
 );
 
 .sv-ui__input-button {
@@ -19,10 +21,6 @@
       $button-color: s.$lmode_loud-color-bg,
       $button-text-color: s.$lmode_loud-color-text,
     );
-    &:hover {
-      border-bottom: 2px solid s.$lmode_loud-color-text;
-      box-shadow: 0 0 20px 0px s.$lmode_loud-color-bg;
-    }
   }
   &.melodic {
     @include btn-gen.make-button(
@@ -33,10 +31,6 @@
       $button-color: s.$lmode_melodic-color-bg,
       $button-text-color: s.$lmode_melodic-color-text,
     );
-    &:hover {
-      border-bottom: 2px solid s.$lmode_melodic-color-text;
-      box-shadow: 0 0 20px 0px s.$lmode_melodic-color-bg;
-    }
   }
   &.quiet {
     @include btn-gen.make-button(
@@ -47,9 +41,5 @@
       $button-color: s.$lmode_quiet-color-bg,
       $button-text-color: s.$lmode_quiet-color-text,
     );
-    &:hover {
-      border-bottom: 2px solid s.$lmode_quiet-color-text;
-      box-shadow: 0 0 20px 0px s.$lmode_quiet-color-bg;
-    }
   }
 }

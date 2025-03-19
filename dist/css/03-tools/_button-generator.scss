@@ -30,6 +30,8 @@ $padding-small-y: 5px !default;
 $inner-spacing: math.div($padding-small-x, 2) !default;
 $set-full-width: false !default;
 $button_active-transform: scale(.95) !default;
+$set-shadow-inset-hover: false !default;
+$set-shadow-inset-pressed: false !default;
 
 //
 // BUTTON CREATION
@@ -107,6 +109,11 @@ $button_active-transform: scale(.95) !default;
     $disabled_border-width: $border-width,
     $disabled_hover_border-width: $border-width,
     $disabled_cursor: not-allowed,
+    
+    $set-shadow-inset-hover: $set-shadow-inset-hover,
+    $set-shadow-inset-pressed: $set-shadow-inset-pressed,
+    $shadow-inset-hover: contrast-col.contrast-color($hover_bg-color, #00000082, #ffffff82),
+    $shadow-inset-pressed: contrast-col.contrast-color($active_bg-color, #00000082, #ffffff82),
 
     $space-between-btns: math.div($padding-small-x, 2)) {
 
@@ -169,6 +176,7 @@ $button_active-transform: scale(.95) !default;
             border-radius: $border-radius;
         }
 
+
         // HOVER
         &:hover {
             text-decoration: $hover_text-decoration;
@@ -178,6 +186,9 @@ $button_active-transform: scale(.95) !default;
             border-width: $hover_border-width;
             border-style: solid;
             border-color: $hover_border-color;
+            @if $set-shadow-inset-hover {
+                box-shadow: inset -2px -2px $shadow-inset-hover;
+            }
         }
 
         // ACTIVE (BEING PRESSED)
@@ -189,6 +200,9 @@ $button_active-transform: scale(.95) !default;
             border-width: $active_border-width;
             border-style: solid;
             border-color: $active_border-color;
+            @if $set-shadow-inset-hover {
+                box-shadow: inset 2px 2px $shadow-inset-pressed;
+            }
         }
 
         // FOCUS

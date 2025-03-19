@@ -609,7 +609,7 @@ label {
 
 input {
   padding: 4px 8px;
-  min-height: 32px;
+  min-height: 36px;
 }
 
 .sv-ui__codeBlock pre {
@@ -630,7 +630,7 @@ input {
 }
 
 .sv-ui__input-textfield input {
-  min-height: 32px;
+  min-height: 36px;
   border: 1px solid #535C77;
   border-radius: 4px;
   padding: 4px 8px;
@@ -688,8 +688,8 @@ input {
   font-size: inherit;
   font-weight: inherit;
   text-decoration: none;
-  min-height: 32px;
-  min-width: 32px;
+  min-height: 36px;
+  min-width: 36px;
   font-size: inherit;
   padding: 5px 10px;
   gap: 5px;
@@ -716,6 +716,7 @@ input {
   border-width: 1px;
   border-style: solid;
   border-color: rgb(153, 0, 76.5);
+  box-shadow: inset -2px -2px rgba(255, 255, 255, 0.5098039216);
 }
 .sv-ui__input-button.loud:active {
   transform: scale(0.95);
@@ -724,6 +725,7 @@ input {
   border-width: 1px;
   border-style: solid;
   border-color: #660033;
+  box-shadow: inset 2px 2px rgba(255, 255, 255, 0.5098039216);
 }
 .sv-ui__input-button.loud:focus {
   color: #FFF6EB;
@@ -746,10 +748,6 @@ input {
   border-color: #cc0066;
   color: #000;
 }
-.sv-ui__input-button.loud:hover {
-  border-bottom: 2px solid #FFF6EB;
-  box-shadow: 0 0 20px 0px #cc0066;
-}
 .sv-ui__input-button.melodic {
   background-color: #52B792;
   color: #1C2541;
@@ -765,6 +763,7 @@ input {
   border-width: 1px;
   border-style: solid;
   border-color: rgb(118.012244898, 197.987755102, 168.6897959184);
+  box-shadow: inset -2px -2px rgba(0, 0, 0, 0.5098039216);
 }
 .sv-ui__input-button.melodic:active {
   transform: scale(0.95);
@@ -773,6 +772,7 @@ input {
   border-width: 1px;
   border-style: solid;
   border-color: rgb(154.0244897959, 212.9755102041, 191.3795918367);
+  box-shadow: inset 2px 2px rgba(0, 0, 0, 0.5098039216);
 }
 .sv-ui__input-button.melodic:focus {
   color: #1C2541;
@@ -795,10 +795,6 @@ input {
   border-color: #52B792;
   color: #000;
 }
-.sv-ui__input-button.melodic:hover {
-  border-bottom: 2px solid #1C2541;
-  box-shadow: 0 0 20px 0px #52B792;
-}
 .sv-ui__input-button.quiet {
   background-color: #f8c662;
   color: #1C2541;
@@ -814,6 +810,7 @@ input {
   border-width: 1px;
   border-style: solid;
   border-color: rgb(250.1768292683, 215.7256097561, 146.8231707317);
+  box-shadow: inset -2px -2px rgba(0, 0, 0, 0.5098039216);
 }
 .sv-ui__input-button.quiet:active {
   transform: scale(0.95);
@@ -822,6 +819,7 @@ input {
   border-width: 1px;
   border-style: solid;
   border-color: rgb(252.3536585366, 233.4512195122, 195.6463414634);
+  box-shadow: inset 2px 2px rgba(0, 0, 0, 0.5098039216);
 }
 .sv-ui__input-button.quiet:focus {
   color: #1C2541;
@@ -843,10 +841,6 @@ input {
   border-style: solid;
   border-color: #f8c662;
   color: #000;
-}
-.sv-ui__input-button.quiet:hover {
-  border-bottom: 2px solid #1C2541;
-  box-shadow: 0 0 20px 0px #f8c662;
 }
 
 /*# sourceMappingURL=strawberry-vanilla-ui.css.map */
