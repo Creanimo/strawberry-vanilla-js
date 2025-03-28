@@ -1,4 +1,4 @@
 {
-    "templateRoot": "./templates/",
-    "loggingLevel": "info"
+    "templateRoot": "./dist/templates/",
+    "tablerIconsWebfontPath": "./dist/tablerIconsWebfont/"
 }

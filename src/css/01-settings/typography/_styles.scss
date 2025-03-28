@@ -1,3 +1,5 @@
+@use "../../01-settings" as s;
+
 $font-size_normal: 1rem;
 $font-size_melodic: 1.15rem;
 $font-size_loud: 1.3rem;
@@ -11,5 +13,4 @@ $font-size_h3: 1.8rem;
 $font-size_h2: 2.1rem;
 $font-size_h1: 2.4rem;
 
-
-
+$lmode_text-p-color: s.$lmode_strong-shade_loud;

@@ -22,16 +22,6 @@
       $button-text-color: s.$lmode_loud-color-text,
     );
   }
-  &.melodic {
-    @include btn-gen.make-button(
-      $set-basics: false, 
-      $set-size: false, 
-      $set-design: true,
-
-      $button-color: s.$lmode_melodic-color-bg,
-      $button-text-color: s.$lmode_melodic-color-text,
-    );
-  }
   &.quiet {
     @include btn-gen.make-button(
       $set-basics: false, 
@@ -40,6 +30,16 @@
 
       $button-color: s.$lmode_quiet-color-bg,
       $button-text-color: s.$lmode_quiet-color-text,
+    );
+  }
+  &.silent {
+    @include btn-gen.make-button(
+      $set-basics: false, 
+      $set-size: false, 
+      $set-design: true,
+
+      $button-color: s.$lmode_gentle-shade_loud,
+      $button-text-color: $lmor
     );
   }
 }

@@ -8,11 +8,12 @@
     "demo": "http-server -c-1",
     "test": "mocha 'test/*.test.mjs'",
     "clean:dist": "rm -rf dist && mkdir dist",
-    "sass": "./node_modules/.bin/sass ./src/css/strawberry-vanilla-ui.scss ./src/css/strawberry-vanilla-ui.css",
-    "copy:assets": "cp -r src/templates dist/ && cp -r src/css dist/",
+    "assets:tablericons":  "mkdir -p dist/fonts/tabler && cp node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons-outline.woff dist/fonts/tabler/ && cp node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons-outline.woff2 dist/fonts/tabler/ && cp node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons-outline.ttf dist/fonts/tabler/ && cp node_modules/@tabler/icons-webfont/dist/tabler-icons-outline.scss dist/fonts/tabler/tabler-icons-outline.scss && cp node_modules/@tabler/icons-webfont/LICENSE dist/fonts/tabler/LICENSE",
+    "copy:assets": "cp -r src/templates dist/ && cp -r src/css dist/css && npm run assets:tablericons",
     "copy:config": "cp src/sv-ui-config.json dist/sv-ui-config.json",
+    "sass": "./node_modules/.bin/sass ./dist/css/strawberry-vanilla-ui.scss ./dist/css/strawberry-vanilla-ui.css",
     "build:rollup": "rollup -c",
-    "build": "npm run clean:dist && npm run sass && npm run copy:assets && npm run copy:config && npm run build:rollup"
+    "build": "npm run clean:dist && npm run copy:assets && npm run sass && npm run copy:config && npm run build:rollup"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,7 @@
   "dependencies": {
     "@highlightjs/cdn-assets": "^11.11.1",
     "@roarr/browser-log-writer": "^1.3.0",
+    "@tabler/icons-webfont": "^3.31.0",
     "dotenv": "^16.4.7",
     "mustache": "^4.2.0",
     "prismjs": "^1.29.0",
