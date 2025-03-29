@@ -167,8 +167,8 @@ $set-shadow-inset-pressed: false !default;
 
     @if $set-design {
         // DEFAULT
-        background-color: $bg-color;
-        color: $text-color;
+        background-color: if($button-style-outlined, transparent, $bg-color);
+        color: if($button-style-outlined, $border-color, $text-color);
         border-width: $border-width;
         border-style: solid;
         border-color: $border-color;
@@ -181,8 +181,8 @@ $set-shadow-inset-pressed: false !default;
         &:hover {
             text-decoration: $hover_text-decoration;
 
-            background-color: $hover_bg-color;
-            color: $hover_text-color;
+            background-color: if($button-style-outlined, transparent, $hover_bg-color);
+            color: if($button-style-outlined, $hover_border-color, $hover_text-color);
             border-width: $hover_border-width;
             border-style: solid;
             border-color: $hover_border-color;
@@ -195,8 +195,8 @@ $set-shadow-inset-pressed: false !default;
         &:active {
             transform: $active_transform;
 
-            background-color: $active_bg-color;
-            color: $active_text-color;
+            background-color: if($button-style-outlined, transparent, $active_bg-color);
+            color: if($button-style-outlined, $active_border-color, $active_text-color);
             border-width: $active_border-width;
             border-style: solid;
             border-color: $active_border-color;
@@ -214,11 +214,11 @@ $set-shadow-inset-pressed: false !default;
         // DEACTIVATED
         &[disabled],
         fieldset[disabled] {
-            background-color: $disabled_bg-color;
+            background-color: if($button-style-outlined, transparent, $disabled_bg-color);
+            color: if($button-style-outlined, $disabled_border-color, $disabled_text-color);
             border-width: $disabled_border-width;
             border-style: solid;
             border-color: $disabled_border-color;
-            color: $disabled_text-color;
             cursor: $disabled_cursor;
             transform: if($active-transform, none, null);
 
@@ -231,11 +231,11 @@ $set-shadow-inset-pressed: false !default;
                 &:focus,
                 &:active,
                 &.active {
-                    background-color: $disabled_hover_bg-color;
+                    background-color: if($button-style-outlined, transparent, $disabled_hover_bg-color);
+                    color: if($button-style-outlined, $disabled_hover_border-color, $disabled_hover_text-color);
                     border-width: $disabled_hover_border-width;
                     border-style: solid;
                     border-color: $disabled_hover_border-color;
-                    color: $disabled_hover_text-color;
                 }
             }
         }

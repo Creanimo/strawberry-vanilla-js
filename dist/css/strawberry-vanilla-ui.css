@@ -20579,6 +20579,7 @@ body {
   font-weight: normal;
   font-style: normal;
   font-size: 1rem;
+  color: #1C2541;
 }
 
 label {
@@ -20681,53 +20682,6 @@ input {
   box-shadow: inset 0px 0px 0px 2px #fff, 0px 0px 0px 5px #fff;
 }
 .sv-ui__input-button.loud {
-  background-color: #cc0066;
-  color: #FFF6EB;
-  border-width: 1px;
-  border-style: solid;
-  border-color: #cc0066;
-  border-radius: 4px;
-}
-.sv-ui__input-button.loud:hover {
-  text-decoration: none;
-  background-color: rgb(153, 0, 76.5);
-  color: #FFF6EB;
-  border-width: 1px;
-  border-style: solid;
-  border-color: rgb(153, 0, 76.5);
-  box-shadow: inset -2px -2px rgba(255, 255, 255, 0.5098039216);
-}
-.sv-ui__input-button.loud:active {
-  transform: scale(0.95);
-  background-color: #660033;
-  color: #FFF6EB;
-  border-width: 1px;
-  border-style: solid;
-  border-color: #660033;
-  box-shadow: inset 2px 2px rgba(255, 255, 255, 0.5098039216);
-}
-.sv-ui__input-button.loud:focus {
-  color: #FFF6EB;
-  text-decoration: none;
-}
-.sv-ui__input-button.loud[disabled],
-.sv-ui__input-button.loud fieldset[disabled] {
-  background-color: rgb(116.28, 77.52, 96.9);
-  border-width: 1px;
-  border-style: solid;
-  border-color: rgb(116.28, 77.52, 96.9);
-  color: rgba(255, 246, 235, 0.9);
-  cursor: not-allowed;
-  transform: none;
-}
-.sv-ui__input-button.loud.engaged {
-  background-color: white;
-  border-width: 3px;
-  border-style: solid;
-  border-color: #cc0066;
-  color: #000;
-}
-.sv-ui__input-button.melodic {
   background-color: #52B792;
   color: #1C2541;
   border-width: 1px;
@@ -20735,7 +20689,7 @@ input {
   border-color: #52B792;
   border-radius: 4px;
 }
-.sv-ui__input-button.melodic:hover {
+.sv-ui__input-button.loud:hover {
   text-decoration: none;
   background-color: rgb(118.012244898, 197.987755102, 168.6897959184);
   color: #1C2541;
@@ -20744,7 +20698,7 @@ input {
   border-color: rgb(118.012244898, 197.987755102, 168.6897959184);
   box-shadow: inset -2px -2px rgba(0, 0, 0, 0.5098039216);
 }
-.sv-ui__input-button.melodic:active {
+.sv-ui__input-button.loud:active {
   transform: scale(0.95);
   background-color: rgb(154.0244897959, 212.9755102041, 191.3795918367);
   color: #1C2541;
@@ -20753,28 +20707,28 @@ input {
   border-color: rgb(154.0244897959, 212.9755102041, 191.3795918367);
   box-shadow: inset 2px 2px rgba(0, 0, 0, 0.5098039216);
 }
-.sv-ui__input-button.melodic:focus {
+.sv-ui__input-button.loud:focus {
   color: #1C2541;
   text-decoration: none;
 }
-.sv-ui__input-button.melodic[disabled],
-.sv-ui__input-button.melodic fieldset[disabled] {
+.sv-ui__input-button.loud[disabled],
+.sv-ui__input-button.loud fieldset[disabled] {
   background-color: #9e9e9e;
+  color: rgba(28, 37, 65, 0.9);
   border-width: 1px;
   border-style: solid;
   border-color: #9e9e9e;
-  color: rgba(28, 37, 65, 0.9);
   cursor: not-allowed;
   transform: none;
 }
-.sv-ui__input-button.melodic.engaged {
+.sv-ui__input-button.loud.engaged {
   background-color: white;
   border-width: 3px;
   border-style: solid;
   border-color: #52B792;
   color: #000;
 }
-.sv-ui__input-button.quiet {
+.sv-ui__input-button.melodic {
   background-color: #f8c662;
   color: #1C2541;
   border-width: 1px;
@@ -20782,7 +20736,7 @@ input {
   border-color: #f8c662;
   border-radius: 4px;
 }
-.sv-ui__input-button.quiet:hover {
+.sv-ui__input-button.melodic:hover {
   text-decoration: none;
   background-color: rgb(250.1768292683, 215.7256097561, 146.8231707317);
   color: #1C2541;
@@ -20791,7 +20745,7 @@ input {
   border-color: rgb(250.1768292683, 215.7256097561, 146.8231707317);
   box-shadow: inset -2px -2px rgba(0, 0, 0, 0.5098039216);
 }
-.sv-ui__input-button.quiet:active {
+.sv-ui__input-button.melodic:active {
   transform: scale(0.95);
   background-color: rgb(252.3536585366, 233.4512195122, 195.6463414634);
   color: #1C2541;
@@ -20800,17 +20754,64 @@ input {
   border-color: rgb(252.3536585366, 233.4512195122, 195.6463414634);
   box-shadow: inset 2px 2px rgba(0, 0, 0, 0.5098039216);
 }
-.sv-ui__input-button.quiet:focus {
+.sv-ui__input-button.melodic:focus {
   color: #1C2541;
+  text-decoration: none;
+}
+.sv-ui__input-button.melodic[disabled],
+.sv-ui__input-button.melodic fieldset[disabled] {
+  background-color: rgb(204.9768292683, 200.6589430894, 192.0231707317);
+  color: rgba(28, 37, 65, 0.9);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(204.9768292683, 200.6589430894, 192.0231707317);
+  cursor: not-allowed;
+  transform: none;
+}
+.sv-ui__input-button.melodic.engaged {
+  background-color: white;
+  border-width: 3px;
+  border-style: solid;
+  border-color: #f8c662;
+  color: #000;
+}
+.sv-ui__input-button.quiet {
+  background-color: transparent;
+  color: #1C2541;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #1C2541;
+  border-radius: 4px;
+}
+.sv-ui__input-button.quiet:hover {
+  text-decoration: none;
+  background-color: transparent;
+  color: rgb(43.3548387097, 57.2903225806, 100.6451612903);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(43.3548387097, 57.2903225806, 100.6451612903);
+  box-shadow: inset -2px -2px rgba(255, 255, 255, 0.5098039216);
+}
+.sv-ui__input-button.quiet:active {
+  transform: scale(0.95);
+  background-color: transparent;
+  color: rgb(58.7096774194, 77.5806451613, 136.2903225806);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(58.7096774194, 77.5806451613, 136.2903225806);
+  box-shadow: inset 2px 2px rgba(255, 255, 255, 0.5098039216);
+}
+.sv-ui__input-button.quiet:focus {
+  color: black;
   text-decoration: none;
 }
 .sv-ui__input-button.quiet[disabled],
 .sv-ui__input-button.quiet fieldset[disabled] {
-  background-color: rgb(204.9768292683, 200.6589430894, 192.0231707317);
+  background-color: transparent;
+  color: #484848;
   border-width: 1px;
   border-style: solid;
-  border-color: rgb(204.9768292683, 200.6589430894, 192.0231707317);
-  color: rgba(28, 37, 65, 0.9);
+  border-color: #484848;
   cursor: not-allowed;
   transform: none;
 }
@@ -20818,7 +20819,7 @@ input {
   background-color: white;
   border-width: 3px;
   border-style: solid;
-  border-color: #f8c662;
+  border-color: #1C2541;
   color: #000;
 }
 

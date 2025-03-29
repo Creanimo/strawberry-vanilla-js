@@ -1,4 +1,4 @@
-@use "../../01-settings/" as s;
+@use "../../01-settings" as s;
 @use "../../03-tools/button-generator" as btn-gen with(
     $border-radius: s.$border-radius_decorative-small,
     $input-field-height: s.$input_min-height,
@@ -18,8 +18,8 @@
       $set-size: false, 
       $set-design: true,
 
-      $button-color: s.$lmode_loud-color-bg,
-      $button-text-color: s.$lmode_loud-color-text,
+      $button-color: s.$lmode_melodic-color-bg,
+      $button-text-color: s.$lmode_melodic-color-text,
     );
   }
   &.melodic {
@@ -28,8 +28,8 @@
       $set-size: false, 
       $set-design: true,
 
-      $button-color: s.$lmode_melodic-color-bg,
-      $button-text-color: s.$lmode_melodic-color-text,
+      $button-color: s.$lmode_quiet-color-bg,
+      $button-text-color: s.$lmode_quiet-color-text,
     );
   }
   &.quiet {
@@ -37,9 +37,8 @@
       $set-basics: false, 
       $set-size: false, 
       $set-design: true,
-
-      $button-color: s.$lmode_quiet-color-bg,
-      $button-text-color: s.$lmode_quiet-color-text,
+      $button-style-outlined: true,
+      $button-color: s.$lmode_strong-shade_loud,
     );
   }
 }
