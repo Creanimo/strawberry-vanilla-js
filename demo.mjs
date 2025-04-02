@@ -1,20 +1,31 @@
-import { loadConfig, UiTextField, UiCodeBlock, UiButton } from "./dist/index.esm.js";
+import { uiRegistry, loadConfig, UiTextField, UiCodeBlock, UiButton } from "./dist/index.esm.js";
+
+window.uiRegistry = uiRegistry;
 
 loadConfig().then(() => {
     function exampleTextfield() {
         function textfieldValidation(value) {
-            if (value === "")
-                return { alertType: "info", message: "Enter more than 4 characters." };
-            if (value.length < 4)
+            if (value === "") {
                 return {
+                    isValid: false,
+                    alertType: "info",
+                    message: "Enter more than 4 characters.",
+                };
+            }
+            if (value.length < 4) {
+                return {
+                    isValid: false,
                     alertType: "warning",
                     message: "Not enough characters. Must be at least 4.",
                 };
-            if (value.length >= 4)
+            }
+            if (value.length >= 4) {
                 return {
+                    isValid: true,
                     alertType: "success",
                     message: "Yay! It's more than 4 characters.",
                 };
+            }
         }
 
         const demoTextfield = new UiTextField({

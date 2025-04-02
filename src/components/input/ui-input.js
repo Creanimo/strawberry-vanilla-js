@@ -4,24 +4,27 @@ import { dependencyInjection } from "../../tools/commonDependencies.js";
 
 class UiInput extends UiComponent {
     /**
-     *
      * @param {string} id
      * @param {string} label
      * @param {string} value
      * @param {string} dataName
-     * @param {() => void | null} callOnAction
+     * @param {function():void | null} fetchFunction
+     * @param {Dependencies} dependencies
+     * @param {function():void | null} callOnAction
+     * @param {function(string): ValidationResult | null} validationFunction
+     * @param {ValidationResult | null} validationResult
      */
     constructor({
-        id = null,
-        label,
-        dataName = label,
-        value = null,
-        fetchFunction = null,
-        dependencies = dependencyInjection,
-        callOnAction = null,
-        validationFunction = null,
-        validationResult = null,
-    }) {
+                    id = null,
+                    label,
+                    dataName = label,
+                    value = null,
+                    fetchFunction = null,
+                    dependencies = dependencyInjection,
+                    callOnAction = null,
+                    validationFunction = null,
+                    validationResult = null,
+                }) {
         super({ id, label, fetchFunction, dependencies });
         /** @type {string} */
         this.type = "sv-ui__input";
@@ -34,7 +37,11 @@ class UiInput extends UiComponent {
 
         /** @type {() => void | null} */
         this.callOnAction = callOnAction;
+
+        /** @type {function(string): ValidationResult | null} */
         this.validationFunction = validationFunction;
+
+        /** @type {ValidationResult | null} */
         this.validationResult = validationResult;
     }
 
@@ -52,7 +59,7 @@ class UiInput extends UiComponent {
             type: this.type,
             key: this.dataName,
             value: this.value,
-        }
+        };
     }
 
     async render(targetNode) {
@@ -103,7 +110,7 @@ class UiInput extends UiComponent {
         if (this.validationFunction) {
             this._dependencies.log.debug(`Validating ${this.type} ${this.id}`);
             const previousResult = structuredClone(this.validationResult);
-            this.validationResult = await this.validationFunction(this.value);
+            this.validationResult = await this._dependencies.validationService.validate(this.value, this.validationFunction);
             this._dependencies.log.debug(
                 `Validation result of ${this.type} ${this.id}\nPrevious: ${JSON.stringify(previousResult)}\nNow: ${JSON.stringify(this.validationResult)}`
             );

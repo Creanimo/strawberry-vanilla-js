@@ -24,6 +24,8 @@ class UiCodeBlock extends UiComponent {
         this.code = code;
 
         this.templatePath = `${getConfig().templateRoot}code/codeBlock.html`;
+
+        this._dependencies.uiRegistry.register(this);
     }
 
     get code() {

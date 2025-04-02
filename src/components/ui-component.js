@@ -53,14 +53,6 @@ class UiComponent {
          * @type {UiComponent} dynamicChildren[].component to place inside the div
          */
         this.dynamicChildren = [];
-
-        /**
-         * @type {boolean}
-         */
-        this.logObject = false;
-        if (this.logObject) {
-            this._dependencies.log.trace(this, `Initialized a ${this.type}`);
-        }
     }
 
     /**
@@ -169,9 +161,10 @@ class UiComponent {
                 );
             }
         } catch (error) {
-            console.error("Render error:", error);
+            this._dependencies.log.error("Render error:", error);
         } finally {
             await this.setLoading(false);
+            this._dependencies.uiRegistry.updateStatus(this.id, "rendered");
             this._dependencies.log.trace(
                 `${this.type} with ID ${this.id}: loading state has been set to false (rendering final step).`,
             );

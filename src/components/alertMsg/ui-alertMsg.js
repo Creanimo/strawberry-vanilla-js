@@ -16,7 +16,7 @@ class UiAlertMsg extends UiComponent {
         fetchFunction = null,
         dependencies = dependencyInjection,
     }) {
-        super({id, label, dataName, fetchFunction, logObject: true, dependencies: dependencyInjection});
+        super({id, label, dataName, fetchFunction, dependencies: dependencyInjection});
         this.type = "sv-ui__alert-msg"
         this.message = message;
         const validAlertTypes = [
@@ -31,6 +31,8 @@ class UiAlertMsg extends UiComponent {
             throw new TypeError("alertType must be 'success', 'info', 'warning' or 'error'.")
         }
         this.templatePath = `${this._dependencies.getConfig().templateRoot}/alertMsg/alertMsg.html`;
+
+        this._dependencies.uiRegistry.register(this);
     }
 
     createContainer() {

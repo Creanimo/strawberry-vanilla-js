@@ -46,6 +46,8 @@ class UiButton extends UiInput {
         } else {
             this._isLink = false;
         }
+
+        this._dependencies.uiRegistry.register(this);
     }
     
     getRenderProperties() {

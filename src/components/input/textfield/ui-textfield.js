@@ -19,10 +19,11 @@ class UiTextField extends UiInput {
                 validationResult = null,
                 dependencies = dependencyInjection,
     }) {
-        super({id, label, dataName, value, fetchFunction, callOnAction, validationFunction, validationResult, logObject: true, dependencies});
+        super({id, label, dataName, value, fetchFunction, callOnAction, validationFunction, validationResult, dependencies});
         this.type = "sv-ui__input-textfield"
         this.templatePath = `${this._dependencies.getConfig().templateRoot}input/textfield.html`;
         this.textfieldId = this._dependencies.createId(); // used in label for a11y
+        this._dependencies.uiRegistry.register(this);
     }
 
     getRenderProperties() {
