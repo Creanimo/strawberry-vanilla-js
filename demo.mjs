@@ -1,4 +1,4 @@
-import { uiRegistry, loadConfig, UiTextField, UiCodeBlock, UiButton } from "./dist/index.esm.js";
+import { uiRegistry, loadConfig, UiTextField, UiCodeBlock, UiButton, UiIcon } from "./dist/index.esm.js";
 
 window.uiRegistry = uiRegistry;
 
@@ -75,6 +75,28 @@ loadConfig().then(() => {
         code: String(exampleButtons),
         language: "javascript",
     })
-    
+
     demoButtonsCode.render(document.getElementById("example-buttons__code"))
+
+    async function exampleIcons() {
+        const demoIcons = [
+            { label: "A wonderful rocket", iconClass: "ti-rocket", addAriaLabel: true },
+            { label: "Beautiful checkmark", iconClass: "ti-check", showLabel: true }
+        ];
+
+        const iconComponents = demoIcons.map(iconData => new UiIcon(iconData));
+
+        for (const icon of iconComponents) {
+            await icon.render(document.getElementById("example-icons"));
+        }
+    };
+    exampleIcons();
+
+    const demoIconsCode = new UiCodeBlock({
+        label: "Code of Icons Example",
+        code: String(exampleIcons),
+        language: "javascript",
+    })
+
+    demoIconsCode.render(document.getElementById("example-icons__code"))
 });

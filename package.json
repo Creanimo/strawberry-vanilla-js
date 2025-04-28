@@ -8,7 +8,7 @@
     "demo": "http-server -c-1",
     "test": "mocha 'test/*.test.mjs'",
     "clean:dist": "rm -rf dist && mkdir -p dist/templates",
-    "assets:tablericons":  "mkdir -p dist/fonts/tabler && cp node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons-outline.woff dist/fonts/tabler/ && cp node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons-outline.woff2 dist/fonts/tabler/ && cp node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons-outline.ttf dist/fonts/tabler/ && cp node_modules/@tabler/icons-webfont/dist/tabler-icons-outline.scss dist/fonts/tabler/tabler-icons-outline.scss && cp node_modules/@tabler/icons-webfont/LICENSE dist/fonts/tabler/LICENSE && cp node_modules/@tabler/icons/icons.json src/templates/",
+    "assets:tablericons":  "mkdir -p dist/fonts/tabler && cp node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.woff dist/fonts/tabler/ && cp node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.woff2 dist/fonts/tabler/ && cp node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.ttf dist/fonts/tabler/ && cp node_modules/@tabler/icons-webfont/dist/tabler-icons.scss dist/fonts/tabler/tabler-icons.scss && cp node_modules/@tabler/icons-webfont/LICENSE dist/fonts/tabler/LICENSE && cp node_modules/@tabler/icons/icons.json src/templates/",
     "copy:assets": "cp -r src/templates dist/ && cp -r src/css dist/css && npm run assets:tablericons",
     "copy:config": "cp src/sv-ui-config.json dist/sv-ui-config.json",
     "sass": "./node_modules/.bin/sass ./dist/css/strawberry-vanilla-ui.scss ./dist/css/strawberry-vanilla-ui.css",

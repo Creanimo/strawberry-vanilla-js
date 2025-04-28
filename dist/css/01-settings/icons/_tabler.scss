@@ -1,4 +1,4 @@
-@use "../../../../dist/fonts/tabler/tabler-icons-outline.scss" as tabler with (
+@use "../../../../dist/fonts/tabler/tabler-icons.scss" as tabler with (
   $ti-font-path: "../../../../dist/fonts/tabler/",
 );
-@forward "../../../../dist/fonts/tabler/tabler-icons-outline.scss";
+@forward "../../../../dist/fonts/tabler/tabler-icons.scss";

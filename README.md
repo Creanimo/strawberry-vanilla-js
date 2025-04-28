@@ -12,6 +12,7 @@ This is the current state of all components
 UiInput/UiTextField | 🟢 | 🟡 | 🟢 |
 UiAlertMsg | 🟢 | 🔴 | 🟡 |
 UiCodeBlock | 🟢 | 🔴 | 🟡 |
+UiIcons | 🟢 | 🟡 | 🟢 |
 
 🟡 in demo = some UI components use it, but it doesn't have its own section.
 

@@ -1,4 +1,4 @@
-import { dependencyInjection } from "../tools/commonDependencies.js"
+import { dependencyInjection } from "../tools/commonDependencies.js";
 
 /**
  * Base class for UI components.
@@ -9,10 +9,17 @@ class UiComponent {
      * @param {Object} options - Configuration options for the UI component.
      * @param {string} options.id - The unique identifier for the component.
      * @param {string} options.label - The label for the component.
+     * @param {boolean} options.showLoading
      * @param {() => Promise<Object>} [options.fetchFunction=null] - An optional async function to fetch data.
      * @param {Object} dependencies - only pass different dependencies for unit tests in mocha
      */
-    constructor({ label, id = null, fetchFunction = null, dependencies = dependencyInjection }) {
+    constructor({
+        label,
+        id = null,
+        showLoading = true,
+        fetchFunction = null,
+        dependencies = dependencyInjection,
+    }) {
         /** @type {Object} */
         this._dependencies = dependencies;
 
@@ -21,6 +28,9 @@ class UiComponent {
 
         /** @type {string} */
         this.label = label;
+
+        /** @type {boolean} */
+        this.showLoading = showLoading;
 
         /** @type {string} */
         this.type = "sv-ui__component";
@@ -82,12 +92,14 @@ class UiComponent {
     /**
      * @param {boolean} state
      */
-    async setLoading(state) {
-        if (state) {
+    async setLoading(state, showLoading = this.showLoading) {
+        if ((state && showLoading)) {
             const loadingTemplate = await this._dependencies.loadTemplate(
                 `${this._dependencies.getConfig().templateRoot}loading.html`,
             );
-            const loadingNode = await this._dependencies.renderTpl(loadingTemplate, {id: this.id});
+            const loadingNode = await this._dependencies.renderTpl(loadingTemplate, {
+                id: this.id,
+            });
             this.componentNode = await loadingNode;
 
             this.removeFromDom();
@@ -95,7 +107,7 @@ class UiComponent {
             if (this.targetNode) {
                 this.targetNode.appendChild(this.componentNode);
             }
-        } 
+        }
 
         this.loading = state;
         this._dependencies.log.trace(
@@ -104,8 +116,8 @@ class UiComponent {
     }
 
     removeFromDom() {
-        if (document.getElementById(this.id)) {
-            const staleComponent = document.getElementById(this.id); 
+        const staleComponent = document.getElementById(this.id);
+        if (staleComponent) {
             staleComponent.remove();
         }
     }
@@ -113,30 +125,45 @@ class UiComponent {
     /**
      * Renders UI components and replaces content of given htmlNode
      */
-    async render(targetNode = this.targetNode) {
+    async render(
+        targetNode = this.targetNode,
+        { showLoading = this.showLoading, replace = true } = {},
+    ) {
         if (targetNode !== this.targetNode) {
             this.targetNode = targetNode;
         }
 
-        await this.setLoading(true);
-        this._dependencies.log.trace(`${this.type} with ID ${this.id}: append loading html done.`);
+        await this.setLoading(true, showLoading);
+        this._dependencies.log.trace(
+            `${this.type} with ID ${this.id}: append loading html done.`,
+        );
 
         try {
             let propCollectionToRender;
             if (this.fetchFunction) {
-                this._dependencies.log.trace(`${this.type} with ID ${this.id}: starting fetch.`);
+                this._dependencies.log.trace(
+                    `${this.type} with ID ${this.id}: starting fetch.`,
+                );
                 propCollectionToRender = await this.fetchData(this.fetchFunction);
             } else {
                 propCollectionToRender = this.getRenderProperties();
             }
 
-            const tempNode = document.createElement("template")
+            const tempNode = document.createElement("template");
 
             // Render the actual component
-            const componentTemplate = await this._dependencies.loadTemplate(this.templatePath);
-            const outerComponent = await this._dependencies.renderTpl(componentTemplate, propCollectionToRender);
+            const componentTemplate = await this._dependencies.loadTemplate(
+                this.templatePath,
+            );
+            const outerComponent = await this._dependencies.renderTpl(
+                componentTemplate,
+                propCollectionToRender,
+            );
             tempNode.append(outerComponent);
-            this._dependencies.log.trace(tempNode, `${this.type} with ID ${this.id}: rendered tempNode.`);
+            this._dependencies.log.trace(
+                tempNode,
+                `${this.type} with ID ${this.id}: rendered tempNode.`,
+            );
 
             if (this.permanentChildren) {
                 await this.applyChildren(tempNode, this.permanentChildren);
@@ -152,12 +179,18 @@ class UiComponent {
             );
 
             this.componentNode = tempNode.firstChild;
-            this.removeFromDom();
-            targetNode.appendChild(this.componentNode);
 
-            if (document.getElementById(this.id)) {
+            const existingNode = document.getElementById(this.id);
+            if (replace && existingNode) {
+                existingNode.replaceWith(this.componentNode);
                 this._dependencies.log.info(
                     `${this.type} with ID ${this.id}: replaced componentNode with tempNode in DOM.`,
+                );
+            } else if (this.targetNode) {
+                // fallback: append if not found
+                this.targetNode.appendChild(this.componentNode);
+                this._dependencies.log.info(
+                    `${this.type} with ID ${this.id}: appended componentNode in DOM targetNode.`,
                 );
             }
         } catch (error) {
@@ -173,14 +206,22 @@ class UiComponent {
 
     async applyChildren(parentNode, childrenCollection, clearTarget = false) {
         for (const child of childrenCollection) {
-            const childTargetNode = parentNode.querySelector(`.${child.target}`);  
+            const childTargetNode = parentNode.querySelector(`.${child.target}`);
             child.component._dependencies = this._dependencies;
             if (clearTarget) {
                 childTargetNode.innerHTML = "";
             }
             await child.component.render(childTargetNode);
+
             const childHtmlNode = child.component.componentNode;
-            childTargetNode.appendChild(childHtmlNode);
+            const existingChild = childTargetNode.querySelector(
+                `#${child.component.id}`,
+            );
+            if (existingChild) {
+                existingChild.replaceWith(childHtmlNode);
+            } else {
+                childTargetNode.appendChild(childHtmlNode);
+            }
         }
     }
 
