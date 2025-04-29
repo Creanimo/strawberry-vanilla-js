@@ -1,4 +1,12 @@
-import { uiRegistry, loadConfig, UiTextField, UiCodeBlock, UiButton, UiIcon } from "./dist/index.esm.js";
+import {
+    uiRegistry,
+    loadConfig,
+    UiTextField,
+    UiCodeBlock,
+    UiButton,
+    UiIcon,
+    UiItem,
+} from "./dist/index.esm.js";
 
 window.uiRegistry = uiRegistry;
 
@@ -43,26 +51,25 @@ loadConfig().then(() => {
         label: "Code of Textfield Example",
         code: String(exampleTextfield),
         language: "javascript",
-    })
+    });
 
-    demoTextfieldCode.render(document.getElementById("example-textfield__code"))
-
+    demoTextfieldCode.render(document.getElementById("example-textfield__code"));
 
     async function exampleButtons() {
         const buttonLoud = new UiButton({
             label: "Click me",
             buttonPriority: "loud",
-        })
+        });
 
         const buttonMelodic = new UiButton({
             label: "Click me",
             buttonPriority: "melodic",
-        })
+        });
 
         const buttonQuiet = new UiButton({
             label: "Click me",
             buttonPriority: "quiet",
-        })
+        });
 
         await buttonLoud.render(document.getElementById("example-buttons"));
         await buttonMelodic.render(document.getElementById("example-buttons"));
@@ -74,29 +81,51 @@ loadConfig().then(() => {
         label: "Code of Buttons Example",
         code: String(exampleButtons),
         language: "javascript",
-    })
+    });
 
-    demoButtonsCode.render(document.getElementById("example-buttons__code"))
+    demoButtonsCode.render(document.getElementById("example-buttons__code"));
 
     async function exampleIcons() {
         const demoIcons = [
-            { label: "A wonderful rocket", iconClass: "ti-rocket", addAriaLabel: true },
-            { label: "Beautiful checkmark", iconClass: "ti-check", showLabel: true }
+            {
+                label: "A wonderful rocket",
+                iconClass: "ti-rocket",
+                addAriaLabel: true,
+            },
+            { label: "Beautiful checkmark", iconClass: "ti-check", showLabel: true },
         ];
 
-        const iconComponents = demoIcons.map(iconData => new UiIcon(iconData));
+        const iconComponents = demoIcons.map((iconData) => new UiIcon(iconData));
 
         for (const icon of iconComponents) {
             await icon.render(document.getElementById("example-icons"));
         }
-    };
+    }
     exampleIcons();
 
     const demoIconsCode = new UiCodeBlock({
         label: "Code of Icons Example",
         code: String(exampleIcons),
         language: "javascript",
-    })
+    });
 
-    demoIconsCode.render(document.getElementById("example-icons__code"))
+    demoIconsCode.render(document.getElementById("example-icons__code"));
+
+    async function exampleItem() {
+        const item = new UiItem({
+            loudIdentifier: "Main Title",
+            calmIdentifier: "Subtitle",
+            loudAction: new UiButton({
+                label: "Very Important Action",
+                buttonPriority: "loud",
+            }),
+            calmActions: [
+                new UiButton({ label: "Secondary 1", buttonPriority: "quiet" }),
+                new UiButton({ label: "Secondary 2", buttonPriority: "quiet" }),
+            ],
+            bodyContent: "Some content",
+        });
+        await item.render(document.getElementById("example-item"));
+    }
+    exampleItem();
 });

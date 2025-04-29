@@ -7,10 +7,10 @@ class UiComponent {
     /**
      * Creates an instance of UiComponent.
      * @param {Object} options - Configuration options for the UI component.
-     * @param {string} options.id - The unique identifier for the component.
+     * @param {null|string} options.id - The unique identifier for the component.
      * @param {string} options.label - The label for the component.
      * @param {boolean} options.showLoading
-     * @param {() => Promise<Object>} [options.fetchFunction=null] - An optional async function to fetch data.
+     * @param {null|() => Promise<Object>} [options.fetchFunction] - An optional async function to fetch data.
      * @param {Object} dependencies - only pass different dependencies for unit tests in mocha
      */
     constructor({
@@ -77,6 +77,41 @@ class UiComponent {
         };
     }
 
+    getData() {
+        const permanentChildrenData = this.permanentChildren.map((child) => ({
+            target: child.target,
+            component: child.component.getData(),
+        }));
+
+        const dynamicChildrenData = this.dynamicChildren.map((child) => ({
+            target: child.target,
+            component: child.component.getData(),
+        }));
+
+        return {
+            id: this.id,
+            label: this.label,
+            type: this.type,
+            loading: this.loading,
+            permanentChildren: permanentChildrenData,
+            dynamicChildren: dynamicChildrenData,
+        };
+    }
+
+    fromData(data) {
+        const permanentChildren = []
+        for (const child of data.permanentChildren) {
+            permanentChildren.push({ target: child.target, component: this._dependencies.registry[child.type].fromData() })
+        }
+        return new this({
+            id: data.id,
+            label: data.label,
+            type: data.type,
+            loading: data.loading,
+            permanentChildren: permanentChildren,
+            })
+    }
+
     /**
      * @param {string} id
      */
@@ -93,7 +128,7 @@ class UiComponent {
      * @param {boolean} state
      */
     async setLoading(state, showLoading = this.showLoading) {
-        if ((state && showLoading)) {
+        if (state && showLoading) {
             const loadingTemplate = await this._dependencies.loadTemplate(
                 `${this._dependencies.getConfig().templateRoot}loading.html`,
             );
@@ -161,7 +196,7 @@ class UiComponent {
             );
             tempNode.append(outerComponent);
             this._dependencies.log.trace(
-                tempNode,
+                { tempNode },
                 `${this.type} with ID ${this.id}: rendered tempNode.`,
             );
 
@@ -174,7 +209,7 @@ class UiComponent {
             }
 
             this._dependencies.log.trace(
-                tempNode,
+                { tempNode },
                 `${this.type} with ID ${this.id}: Assembled rendering in temp Node`,
             );
 
@@ -194,7 +229,10 @@ class UiComponent {
                 );
             }
         } catch (error) {
-            this._dependencies.log.error("Render error:", error);
+            this._dependencies.log.error(
+                { errorMessage: error.message, errorStack: error.stack, error },
+                "Render error:",
+            );
         } finally {
             await this.setLoading(false);
             this._dependencies.uiRegistry.updateStatus(this.id, "rendered");
@@ -215,7 +253,7 @@ class UiComponent {
 
             const childHtmlNode = child.component.componentNode;
             const existingChild = childTargetNode.querySelector(
-                `#${child.component.id}`,
+                `[id="${child.component.id}"]`,
             );
             if (existingChild) {
                 existingChild.replaceWith(childHtmlNode);

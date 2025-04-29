@@ -5559,10 +5559,10 @@ class UiComponent {
     /**
      * Creates an instance of UiComponent.
      * @param {Object} options - Configuration options for the UI component.
-     * @param {string} options.id - The unique identifier for the component.
+     * @param {null|string} options.id - The unique identifier for the component.
      * @param {string} options.label - The label for the component.
      * @param {boolean} options.showLoading
-     * @param {() => Promise<Object>} [options.fetchFunction=null] - An optional async function to fetch data.
+     * @param {null|() => Promise<Object>} [options.fetchFunction] - An optional async function to fetch data.
      * @param {Object} dependencies - only pass different dependencies for unit tests in mocha
      */
     constructor({
@@ -5645,7 +5645,7 @@ class UiComponent {
      * @param {boolean} state
      */
     async setLoading(state, showLoading = this.showLoading) {
-        if ((state && showLoading)) {
+        if (state && showLoading) {
             const loadingTemplate = await this._dependencies.loadTemplate(
                 `${this._dependencies.getConfig().templateRoot}loading.html`,
             );
@@ -5713,7 +5713,7 @@ class UiComponent {
             );
             tempNode.append(outerComponent);
             this._dependencies.log.trace(
-                tempNode,
+                { tempNode },
                 `${this.type} with ID ${this.id}: rendered tempNode.`,
             );
 
@@ -5726,7 +5726,7 @@ class UiComponent {
             }
 
             this._dependencies.log.trace(
-                tempNode,
+                { tempNode },
                 `${this.type} with ID ${this.id}: Assembled rendering in temp Node`,
             );
 
@@ -5746,7 +5746,10 @@ class UiComponent {
                 );
             }
         } catch (error) {
-            this._dependencies.log.error("Render error:", error);
+            this._dependencies.log.error(
+                { errorMessage: error.message, errorStack: error.stack, error },
+                "Render error:",
+            );
         } finally {
             await this.setLoading(false);
             this._dependencies.uiRegistry.updateStatus(this.id, "rendered");
@@ -5767,7 +5770,7 @@ class UiComponent {
 
             const childHtmlNode = child.component.componentNode;
             const existingChild = childTargetNode.querySelector(
-                `#${child.component.id}`,
+                `[id="${child.component.id}"]`,
             );
             if (existingChild) {
                 existingChild.replaceWith(childHtmlNode);
@@ -8816,6 +8819,7 @@ class UiIcon extends UiComponent {
         this.showLabel = showLabel;
         this.addAriaLabel = addAriaLabel;
         this.templatePath = `${this._dependencies.getConfig().templateRoot}icon/icon.html`;
+        this._dependencies.uiRegistry.register(this);
     }
 
     getRenderProperties() {
@@ -8828,5 +8832,155 @@ class UiIcon extends UiComponent {
     }
 }
 
-export { UiButton, UiCodeBlock, UiIcon, UiTextField, getConfig, loadConfig, uiRegistry };
+/**
+ * UI Item/Card component for displaying entity information with flexible fields.
+ * Each field can be a string, a UiComponent, or (for actions) an array of UiComponents.
+ * Field types can be restricted via the static allowedComponentTypes map.
+ */
+class UiItem extends UiComponent {
+    /**
+     * Map of allowed component types per field.
+     * If a field is not listed, any UiComponent is allowed.
+     * @type {Object<string, Array<Function>>}
+     */
+    static allowedComponentTypes = {
+        loudAction: [UiButton],
+        calmActions: [UiButton],
+        quietActions: [UiButton],
+        // Add more as needed
+    };
+
+    /**
+     * @typedef {Object} UiItemOptions
+     * @property {null|string|UiComponent} [loudIdentifier]
+     * @property {null|string|UiComponent} [calmIdentifier]
+     * @property {null|string|UiComponent} [loudProperties]
+     * @property {null|string|UiComponent} [calmProperties]
+     * @property {null|string|UiComponent} [quietProperties]
+     * @property {null|string|UiComponent} [bodyContent]
+     * @property {null|string|UiButton} [loudAction]
+     * @property {null|string|UiButton[]} [calmActions]
+     * @property {null|string|UiButton[]} [quietActions]
+     * @property {string} [label]
+     * @property {string} [id]
+     * @property {function|null} [fetchFunction]
+     * @property {Object} [dependencies]
+     */
+
+    /**
+     * Creates a new UiItem instance.
+     * @param {UiItemOptions} options - Configuration options for the item.
+     */
+    constructor({
+        loudIdentifier,
+        calmIdentifier,
+        loudProperties = null,
+        calmProperties = null,
+        quietProperties = null,
+        loudAction = null,
+        calmActions = null,
+        quietActions = null,
+        bodyContent = null,
+        label = typeof loudIdentifier === "string" ? loudIdentifier : "",
+        id,
+        fetchFunction = null,
+        dependencies = dependencyInjection,
+    }) {
+        super({ label, id, fetchFunction, dependencies });
+        /** @type {string} */
+        this.type = "sv-ui__item";
+        /** @type {string} */
+        this.templatePath = `${this._dependencies.getConfig().templateRoot}item/item.html`;
+
+        /**
+         * Internal map of all fields for rendering and child registration.
+         * @type {Object<string, any>}
+         * @private
+         */
+        this._fields = {
+            loudIdentifier,
+            calmIdentifier,
+            loudProperties,
+            calmProperties,
+            quietProperties,
+            loudAction,
+            calmActions,
+            quietActions,
+            bodyContent,
+        };
+
+        /**
+         * List of permanent child components to be rendered into the template.
+         * @type {Array<{target: string, component: UiComponent}>}
+         */
+        this.permanentChildren = [];
+
+        for (const [fieldName, value] of Object.entries(this._fields)) {
+            const allowed = this.constructor.allowedComponentTypes[fieldName];
+
+            if (Array.isArray(value)) {
+                value.forEach((item, idx) => {
+                    if (item instanceof UiComponent) {
+                        if (
+                            allowed &&
+                            !allowed.some((Type) => item instanceof Type)
+                        ) {
+                            throw new Error(
+                                `Component of type ${item.constructor.name} not allowed in array field "${fieldName}". Allowed: ${allowed
+                                    .map((t) => t.name)
+                                    .join(", ")}`
+                            );
+                        }
+                        // All array items share the same target (the container div)
+                        this.permanentChildren.push({
+                            target: fieldName,
+                            component: item,
+                        });
+                    }
+                });
+            } else if (value instanceof UiComponent) {
+                if (
+                    allowed &&
+                    !allowed.some((Type) => value instanceof Type)
+                ) {
+                    throw new Error(
+                        `Component of type ${value.constructor.name} not allowed in field "${fieldName}". Allowed: ${allowed
+                            .map((t) => t.name)
+                            .join(", ")}`
+                    );
+                }
+                this.permanentChildren.push({
+                    target: fieldName,
+                    component: value,
+                });
+            }
+        }
+    }
+
+    /**
+     * Returns an object containing the component's properties for rendering.
+     * For fields that are UiComponents or arrays of UiComponents, returns an empty string
+     * so the template placeholder is empty and ready for child mounting.
+     * @returns {Object<string, string>}
+     */
+    getRenderProperties() {
+        const props = super.getRenderProperties();
+        for (const [fieldName, value] of Object.entries(this._fields)) {
+            if (Array.isArray(value)) {
+                // If all items are components, set to empty string
+                if (value.every((item) => item instanceof UiComponent)) {
+                    props[fieldName] = "";
+                } else {
+                    // Otherwise, join as string (or handle as needed)
+                    props[fieldName] = value.join(", ");
+                }
+            } else {
+                props[fieldName] = value instanceof UiComponent ? "" : value;
+            }
+        }
+        return props;
+    }
+}
+
+export { UiButton, UiCodeBlock, UiIcon, UiItem, UiTextField, getConfig, loadConfig, uiRegistry };
 //# sourceMappingURL=index.esm.js.map

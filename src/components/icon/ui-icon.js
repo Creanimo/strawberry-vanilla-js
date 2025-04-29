@@ -28,6 +28,7 @@ class UiIcon extends UiComponent {
         this.showLabel = showLabel;
         this.addAriaLabel = addAriaLabel;
         this.templatePath = `${this._dependencies.getConfig().templateRoot}icon/icon.html`
+        this._dependencies.uiRegistry.register(this);
     }
 
     getRenderProperties() {
