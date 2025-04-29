@@ -4,6 +4,8 @@ import { log } from "../tools/logger.js";
 import { createId } from "../tools/createId.js";
 import ValidationService from "./validationService.js";
 import uiRegistry from "./UiRegistry.js";
+import ComponentTypeMap from "../components/component-type-map.js";
+import { deserializeComponent, serializeComponent } from "./componentSerializer.js";
 
 class Dependencies {
     constructor() {
@@ -15,6 +17,9 @@ class Dependencies {
         this.createId = createId;
         this.uiRegistry = uiRegistry;
         this.validationService = ValidationService;
+        this.ComponentTypeMap = ComponentTypeMap;
+        this.serializeComponent = serializeComponent;
+        this.deserializeComponent = deserializeComponent;
     }
 }
 

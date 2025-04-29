@@ -77,39 +77,67 @@ class UiComponent {
         };
     }
 
-    getData() {
-        const permanentChildrenData = this.permanentChildren.map((child) => ({
-            target: child.target,
-            component: child.component.getData(),
-        }));
-
-        const dynamicChildrenData = this.dynamicChildren.map((child) => ({
-            target: child.target,
-            component: child.component.getData(),
-        }));
-
+    /**
+     * Returns a plain object representation of the component for serialization.
+     * Subclasses should override and extend this as needed.
+     * @returns {Object}
+     */
+    toJSON() {
         return {
+            type: this.type,
             id: this.id,
             label: this.label,
-            type: this.type,
+            showLoading: this.showLoading,
             loading: this.loading,
-            permanentChildren: permanentChildrenData,
-            dynamicChildren: dynamicChildrenData,
+            permanentChildren: this.permanentChildren.map((child) => ({
+                target: child.target,
+                component: child.component.toJSON(),
+            })),
+            dynamicChildren: this.dynamicChildren.map((child) => ({
+                target: child.target,
+                component: child.component.toJSON(),
+            })),
         };
     }
 
-    fromData(data) {
-        const permanentChildren = []
-        for (const child of data.permanentChildren) {
-            permanentChildren.push({ target: child.target, component: this._dependencies.registry[child.type].fromData() })
-        }
-        return new this({
-            id: data.id,
-            label: data.label,
-            type: data.type,
-            loading: data.loading,
-            permanentChildren: permanentChildren,
-            })
+    /**
+     * Reconstructs a UiComponent (or subclass) from a plain object.
+     * Subclasses should override and extend this as needed.
+     * @param {Object} json - The plain object.
+     * @param {Dependencies} dependencies - The dependencies to inject.
+     * @param {Function} [ComponentClass=UiComponent] - The class to instantiate.
+     * @returns {UiComponent}
+     */
+    static fromJSON(json, dependencies = this._dependencies, ComponentClass = UiComponent) {
+        const instance = new ComponentClass({
+            id: json.id,
+            label: json.label,
+            showLoading: json.showLoading,
+            dependencies,
+        });
+
+        instance.loading = json.loading;
+
+        const { deserializeComponent } = dependencies || {};
+        instance.permanentChildren = (json.permanentChildren || []).map(
+            (childJson) => ({
+                target: childJson.target,
+                component: deserializeComponent
+                    ? deserializeComponent(childJson.component, dependencies)
+                    : null,
+            }),
+        );
+
+        instance.dynamicChildren = (json.dynamicChildren || []).map(
+            (childJson) => ({
+                target: childJson.target,
+                component: deserializeComponent
+                    ? deserializeComponent(childJson.component, dependencies)
+                    : null,
+            }),
+        );
+
+        return instance;
     }
 
     /**
