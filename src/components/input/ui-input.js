@@ -1,8 +1,10 @@
 import UiComponent from "../ui-component.js";
+import ComponentTypeMap from "../component-type-map.js";
 import UiAlertMsg from "../alertMsg/ui-alertMsg.js";
 import { dependencyInjection } from "../../tools/commonDependencies.js";
 
 class UiInput extends UiComponent {
+    static type = "sv-ui__input";
     /**
      * @param {string} id
      * @param {string} label
@@ -26,8 +28,7 @@ class UiInput extends UiComponent {
                     validationResult = null,
                 }) {
         super({ id, label, fetchFunction, dependencies });
-        /** @type {string} */
-        this.type = "sv-ui__input";
+        this.type = UiInput.type;
 
         /** @type {string} */
         this.value = value;
@@ -38,10 +39,10 @@ class UiInput extends UiComponent {
         /** @type {() => void | null} */
         this.callOnAction = callOnAction;
 
-        /** @type {function(string): ValidationResult | null} */
+        /** @type {function(string): Object | null} */
         this.validationFunction = validationFunction;
 
-        /** @type {ValidationResult | null} */
+        /** @type {Object | null} */
         this.validationResult = validationResult;
     }
 
@@ -124,5 +125,7 @@ class UiInput extends UiComponent {
         }
     }
 }
+
+ComponentTypeMap[UiInput.type] = UiInput;
 
 export default UiInput;

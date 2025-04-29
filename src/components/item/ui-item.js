@@ -1,4 +1,5 @@
 import UiComponent from "../ui-component.js";
+import ComponentTypeMap from "../component-type-map.js";
 import UiButton from "../input/button/ui-button.js";
 import { dependencyInjection } from "../../tools/commonDependencies.js";
 
@@ -8,6 +9,8 @@ import { dependencyInjection } from "../../tools/commonDependencies.js";
  * Field types can be restricted via the static allowedComponentTypes map.
  */
 class UiItem extends UiComponent {
+    static type = "sv-ui__item";
+
     /**
      * Map of allowed component types per field.
      * If a field is not listed, any UiComponent is allowed.
@@ -17,7 +20,6 @@ class UiItem extends UiComponent {
         loudAction: [UiButton],
         calmActions: [UiButton],
         quietActions: [UiButton],
-        // Add more as needed
     };
 
     /**
@@ -57,8 +59,9 @@ class UiItem extends UiComponent {
         dependencies = dependencyInjection,
     }) {
         super({ label, id, fetchFunction, dependencies });
-        /** @type {string} */
-        this.type = "sv-ui__item";
+
+        this.type = UiItem.type;
+
         /** @type {string} */
         this.templatePath = `${this._dependencies.getConfig().templateRoot}item/item.html`;
 
@@ -89,7 +92,7 @@ class UiItem extends UiComponent {
             const allowed = this.constructor.allowedComponentTypes[fieldName];
 
             if (Array.isArray(value)) {
-                value.forEach((item, idx) => {
+                value.forEach((item) => {
                     if (item instanceof UiComponent) {
                         if (
                             allowed &&
@@ -151,5 +154,7 @@ class UiItem extends UiComponent {
         return props;
     }
 }
+
+ComponentTypeMap[UiItem.type] = UiItem;
 
 export default UiItem;

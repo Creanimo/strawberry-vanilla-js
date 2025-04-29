@@ -1,4 +1,5 @@
 import { dependencyInjection } from "../../../tools/commonDependencies.js";
+import ComponentTypeMap from "../../component-type-map.js";
 import UiInput from "../ui-input.js";
 
 /**
@@ -6,6 +7,7 @@ import UiInput from "../ui-input.js";
  */
 
 class UiButton extends UiInput {
+    static type = "sv-ui__input-button";
     /** 
      * Buttons can either have a linkHref or a callOnAction(), not both
      * @param {ButtonPriority} buttonPriority
@@ -30,7 +32,7 @@ class UiButton extends UiInput {
             dependencies,
             callOnAction,
         });
-        this.type = "sv-ui__input-button";
+        this.type = UiButton.type;
         this.templatePath = `${this._dependencies.getConfig().templateRoot}input/button.html`;
         this.buttonPriority = buttonPriority;
         this.linkHref = linkHref;
@@ -62,6 +64,8 @@ class UiButton extends UiInput {
         
     }
 }
+
+ComponentTypeMap[UiButton.type] = UiButton;
 
 export default UiButton;
 

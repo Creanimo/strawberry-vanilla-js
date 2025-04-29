@@ -1,7 +1,10 @@
 import UiComponent from "../ui-component.js";
+import ComponentTypeMap from "../component-type-map.js";
 import {dependencyInjection} from "../../tools/commonDependencies.js";
 
 class UiIcon extends UiComponent {
+    static type = "sv-ui__icon";
+
     /**
      *
      * @param {string} iconClass
@@ -23,7 +26,7 @@ class UiIcon extends UiComponent {
                 })
     {
         super({label, id, fetchFunction, dependencies});
-        this.type = "sv-ui__icon";
+        this.type = UiIcon.type;
         this.iconClass = iconClass;
         this.showLabel = showLabel;
         this.addAriaLabel = addAriaLabel;
@@ -40,5 +43,7 @@ class UiIcon extends UiComponent {
         }
     }
 }
+
+ComponentTypeMap[UiIcon.type] = UiIcon;
 
 export default UiIcon;

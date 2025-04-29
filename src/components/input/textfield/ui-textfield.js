@@ -1,7 +1,10 @@
 import UiInput from "../ui-input.js";
+import ComponentTypeMap from "../../component-type-map.js";
 import { dependencyInjection } from "../../../tools/commonDependencies.js";
 
 class UiTextField extends UiInput {
+    static type = "sv-ui__input-textfield";
+
     /**
      * Single Line Text Field
      * @param {string} id 
@@ -20,7 +23,7 @@ class UiTextField extends UiInput {
                 dependencies = dependencyInjection,
     }) {
         super({id, label, dataName, value, fetchFunction, callOnAction, validationFunction, validationResult, dependencies});
-        this.type = "sv-ui__input-textfield"
+        this.type = UiTextField.type;
         this.templatePath = `${this._dependencies.getConfig().templateRoot}input/textfield.html`;
         this.textfieldId = this._dependencies.createId(); // used in label for a11y
         this._dependencies.uiRegistry.register(this);
@@ -33,5 +36,7 @@ class UiTextField extends UiInput {
         } 
     }
 }
+
+ComponentTypeMap[UiTextField.type] = UiTextField;
 
 export default UiTextField;

@@ -1,5 +1,5 @@
-import { getConfig } from "../../tools/initConfig.js";
 import UiComponent from "../ui-component.js";
+import ComponentTypeMap from "../component-type-map.js";
 import { dependencyInjection } from "../../tools/commonDependencies.js";
 
 /**
@@ -7,6 +7,8 @@ import { dependencyInjection } from "../../tools/commonDependencies.js";
  */
 
 class UiAlertMsg extends UiComponent {
+    static type = "sv-ui__alert-msg";
+
     constructor({
         id,
         label,
@@ -16,8 +18,7 @@ class UiAlertMsg extends UiComponent {
         fetchFunction = null,
         dependencies = dependencyInjection,
     }) {
-        super({id, label, dataName, fetchFunction, dependencies: dependencyInjection});
-        this.type = "sv-ui__alert-msg"
+        super({id, label, dataName, fetchFunction, dependencies: dependencies});
         this.message = message;
         const validAlertTypes = [
             "success",
@@ -49,5 +50,7 @@ class UiAlertMsg extends UiComponent {
         }
     }
 }
+
+ComponentTypeMap[UiAlertMsg.type] = UiAlertMsg;
 
 export default UiAlertMsg;

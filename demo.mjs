@@ -126,6 +126,7 @@ loadConfig().then(() => {
             bodyContent: "Some content",
         });
         await item.render(document.getElementById("example-item"));
+        console.log(item.toJSON());
     }
     exampleItem();
 });

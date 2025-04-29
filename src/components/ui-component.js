@@ -1,9 +1,11 @@
 import { dependencyInjection } from "../tools/commonDependencies.js";
+import ComponentTypeMap from "./component-type-map.js";
 
 /**
  * Base class for UI components.
  */
 class UiComponent {
+    static type = "sv-ui__component";
     /**
      * Creates an instance of UiComponent.
      * @param {Object} options - Configuration options for the UI component.
@@ -23,6 +25,8 @@ class UiComponent {
         /** @type {Object} */
         this._dependencies = dependencies;
 
+        this.type = UiComponent.type;
+
         /** @type {string} */
         this.id = id;
 
@@ -31,9 +35,6 @@ class UiComponent {
 
         /** @type {boolean} */
         this.showLoading = showLoading;
-
-        /** @type {string} */
-        this.type = "sv-ui__component";
 
         /** @type {boolean} */
         this.loading = null;
@@ -108,7 +109,11 @@ class UiComponent {
      * @param {Function} [ComponentClass=UiComponent] - The class to instantiate.
      * @returns {UiComponent}
      */
-    static fromJSON(json, dependencies = this._dependencies, ComponentClass = UiComponent) {
+    static fromJSON(
+        json,
+        dependencies,
+        ComponentClass = UiComponent,
+    ) {
         const instance = new ComponentClass({
             id: json.id,
             label: json.label,
@@ -313,5 +318,7 @@ class UiComponent {
         }
     }
 }
+
+ComponentTypeMap[UiComponent.type] = UiComponent;
 
 export default UiComponent;

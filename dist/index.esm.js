@@ -5537,6 +5537,53 @@ class ValidationService {
     }
 }
 
+const ComponentTypeMap = {};
+
+/**
+ * Serializes a UI component instance to a plain object suitable for JSON.
+ * Calls the component's `toJSON()` method if available.
+ *
+ * @param {UiComponent} component - The component instance to serialize.
+ * @returns {Object} The plain object representation of the component.
+ * @throws {TypeError} If the component does not implement toJSON().
+ */
+function serializeComponent(component) {
+    if (typeof component.toJSON === "function") {
+        return component.toJSON();
+    }
+    throw new TypeError(
+        `Component of type "${component.type}" does not implement toJSON().`
+    );
+}
+
+/**
+ * Deserializes a plain object (parsed from JSON) into a UI component instance.
+ * Uses the `type` property to look up the correct class in the ComponentTypeMap.
+ * Calls the class's static `fromJSON()` method if available, otherwise uses the constructor.
+ *
+ * @param {Object} json - The plain object representation of the component.
+ * @param {Dependencies} dependencies - The dependencies to inject into the component.
+ * @returns {UiComponent} The reconstructed component instance.
+ * @throws {TypeError} If the type is not registered or cannot be constructed.
+ */
+function deserializeComponent(json, dependencies) {
+    const type = json.type;
+    const ComponentClass =
+        dependencies?.ComponentTypeMap?.[type] ?? ComponentTypeMap[type];
+
+    if (!ComponentClass) {
+        throw new TypeError(
+            `Unknown component type "${type}" in ComponentTypeMap.`
+        );
+    }
+
+    if (typeof ComponentClass.fromJSON === "function") {
+        return ComponentClass.fromJSON(json, dependencies, ComponentClass);
+    }
+
+    return new ComponentClass({ ...json, dependencies });
+}
+
 class Dependencies {
     constructor() {
         this.loadTemplate = loadTemplate;
@@ -5547,6 +5594,9 @@ class Dependencies {
         this.createId = createId;
         this.uiRegistry = uiRegistry;
         this.validationService = ValidationService;
+        this.ComponentTypeMap = ComponentTypeMap;
+        this.serializeComponent = serializeComponent;
+        this.deserializeComponent = deserializeComponent;
     }
 }
 
@@ -5556,6 +5606,7 @@ const dependencyInjection = new Dependencies();
  * Base class for UI components.
  */
 class UiComponent {
+    static type = "sv-ui__component";
     /**
      * Creates an instance of UiComponent.
      * @param {Object} options - Configuration options for the UI component.
@@ -5575,6 +5626,8 @@ class UiComponent {
         /** @type {Object} */
         this._dependencies = dependencies;
 
+        this.type = UiComponent.type;
+
         /** @type {string} */
         this.id = id;
 
@@ -5583,9 +5636,6 @@ class UiComponent {
 
         /** @type {boolean} */
         this.showLoading = showLoading;
-
-        /** @type {string} */
-        this.type = "sv-ui__component";
 
         /** @type {boolean} */
         this.loading = null;
@@ -5627,6 +5677,73 @@ class UiComponent {
             label: this.label,
             type: this.type,
         };
+    }
+
+    /**
+     * Returns a plain object representation of the component for serialization.
+     * Subclasses should override and extend this as needed.
+     * @returns {Object}
+     */
+    toJSON() {
+        return {
+            type: this.type,
+            id: this.id,
+            label: this.label,
+            showLoading: this.showLoading,
+            loading: this.loading,
+            permanentChildren: this.permanentChildren.map((child) => ({
+                target: child.target,
+                component: child.component.toJSON(),
+            })),
+            dynamicChildren: this.dynamicChildren.map((child) => ({
+                target: child.target,
+                component: child.component.toJSON(),
+            })),
+        };
+    }
+
+    /**
+     * Reconstructs a UiComponent (or subclass) from a plain object.
+     * Subclasses should override and extend this as needed.
+     * @param {Object} json - The plain object.
+     * @param {Dependencies} dependencies - The dependencies to inject.
+     * @param {Function} [ComponentClass=UiComponent] - The class to instantiate.
+     * @returns {UiComponent}
+     */
+    static fromJSON(
+        json,
+        dependencies,
+        ComponentClass = UiComponent,
+    ) {
+        const instance = new ComponentClass({
+            id: json.id,
+            label: json.label,
+            showLoading: json.showLoading,
+            dependencies,
+        });
+
+        instance.loading = json.loading;
+
+        const { deserializeComponent } = dependencies || {};
+        instance.permanentChildren = (json.permanentChildren || []).map(
+            (childJson) => ({
+                target: childJson.target,
+                component: deserializeComponent
+                    ? deserializeComponent(childJson.component, dependencies)
+                    : null,
+            }),
+        );
+
+        instance.dynamicChildren = (json.dynamicChildren || []).map(
+            (childJson) => ({
+                target: childJson.target,
+                component: deserializeComponent
+                    ? deserializeComponent(childJson.component, dependencies)
+                    : null,
+            }),
+        );
+
+        return instance;
     }
 
     /**
@@ -5803,11 +5920,15 @@ class UiComponent {
     }
 }
 
+ComponentTypeMap[UiComponent.type] = UiComponent;
+
 /**
  * @typedef {"success" | "error" | "info" | "warning"} AlertType
  */
 
 class UiAlertMsg extends UiComponent {
+    static type = "sv-ui__alert-msg";
+
     constructor({
         id,
         label,
@@ -5817,8 +5938,7 @@ class UiAlertMsg extends UiComponent {
         fetchFunction = null,
         dependencies = dependencyInjection,
     }) {
-        super({id, label, dataName, fetchFunction, dependencies: dependencyInjection});
-        this.type = "sv-ui__alert-msg";
+        super({id, label, dataName, fetchFunction, dependencies: dependencies});
         this.message = message;
         const validAlertTypes = [
             "success",
@@ -5851,7 +5971,10 @@ class UiAlertMsg extends UiComponent {
     }
 }
 
+ComponentTypeMap[UiAlertMsg.type] = UiAlertMsg;
+
 class UiInput extends UiComponent {
+    static type = "sv-ui__input";
     /**
      * @param {string} id
      * @param {string} label
@@ -5875,8 +5998,7 @@ class UiInput extends UiComponent {
                     validationResult = null,
                 }) {
         super({ id, label, fetchFunction, dependencies });
-        /** @type {string} */
-        this.type = "sv-ui__input";
+        this.type = UiInput.type;
 
         /** @type {string} */
         this.value = value;
@@ -5887,10 +6009,10 @@ class UiInput extends UiComponent {
         /** @type {() => void | null} */
         this.callOnAction = callOnAction;
 
-        /** @type {function(string): ValidationResult | null} */
+        /** @type {function(string): Object | null} */
         this.validationFunction = validationFunction;
 
-        /** @type {ValidationResult | null} */
+        /** @type {Object | null} */
         this.validationResult = validationResult;
     }
 
@@ -5974,7 +6096,11 @@ class UiInput extends UiComponent {
     }
 }
 
+ComponentTypeMap[UiInput.type] = UiInput;
+
 class UiTextField extends UiInput {
+    static type = "sv-ui__input-textfield";
+
     /**
      * Single Line Text Field
      * @param {string} id 
@@ -5993,7 +6119,7 @@ class UiTextField extends UiInput {
                 dependencies = dependencyInjection,
     }) {
         super({id, label, dataName, value, fetchFunction, callOnAction, validationFunction, validationResult, dependencies});
-        this.type = "sv-ui__input-textfield";
+        this.type = UiTextField.type;
         this.templatePath = `${this._dependencies.getConfig().templateRoot}input/textfield.html`;
         this.textfieldId = this._dependencies.createId(); // used in label for a11y
         this._dependencies.uiRegistry.register(this);
@@ -6007,11 +6133,14 @@ class UiTextField extends UiInput {
     }
 }
 
+ComponentTypeMap[UiTextField.type] = UiTextField;
+
 /**
  * @typedef {"loud" | "melodic" | "quiet" | "textlink" } ButtonPriority
  */
 
 class UiButton extends UiInput {
+    static type = "sv-ui__input-button";
     /** 
      * Buttons can either have a linkHref or a callOnAction(), not both
      * @param {ButtonPriority} buttonPriority
@@ -6036,7 +6165,7 @@ class UiButton extends UiInput {
             dependencies,
             callOnAction,
         });
-        this.type = "sv-ui__input-button";
+        this.type = UiButton.type;
         this.templatePath = `${this._dependencies.getConfig().templateRoot}input/button.html`;
         this.buttonPriority = buttonPriority;
         this.linkHref = linkHref;
@@ -6068,6 +6197,8 @@ class UiButton extends UiInput {
         
     }
 }
+
+ComponentTypeMap[UiButton.type] = UiButton;
 
 /*!
   Highlight.js v11.11.1 (git: 08cb242e7d)
@@ -8793,6 +8924,8 @@ class UiCodeBlock extends UiComponent {
 }
 
 class UiIcon extends UiComponent {
+    static type = "sv-ui__icon";
+
     /**
      *
      * @param {string} iconClass
@@ -8814,7 +8947,7 @@ class UiIcon extends UiComponent {
                 })
     {
         super({label, id, fetchFunction, dependencies});
-        this.type = "sv-ui__icon";
+        this.type = UiIcon.type;
         this.iconClass = iconClass;
         this.showLabel = showLabel;
         this.addAriaLabel = addAriaLabel;
@@ -8832,12 +8965,16 @@ class UiIcon extends UiComponent {
     }
 }
 
+ComponentTypeMap[UiIcon.type] = UiIcon;
+
 /**
  * UI Item/Card component for displaying entity information with flexible fields.
  * Each field can be a string, a UiComponent, or (for actions) an array of UiComponents.
  * Field types can be restricted via the static allowedComponentTypes map.
  */
 class UiItem extends UiComponent {
+    static type = "sv-ui__item";
+
     /**
      * Map of allowed component types per field.
      * If a field is not listed, any UiComponent is allowed.
@@ -8847,7 +8984,6 @@ class UiItem extends UiComponent {
         loudAction: [UiButton],
         calmActions: [UiButton],
         quietActions: [UiButton],
-        // Add more as needed
     };
 
     /**
@@ -8887,8 +9023,9 @@ class UiItem extends UiComponent {
         dependencies = dependencyInjection,
     }) {
         super({ label, id, fetchFunction, dependencies });
-        /** @type {string} */
-        this.type = "sv-ui__item";
+
+        this.type = UiItem.type;
+
         /** @type {string} */
         this.templatePath = `${this._dependencies.getConfig().templateRoot}item/item.html`;
 
@@ -8919,7 +9056,7 @@ class UiItem extends UiComponent {
             const allowed = this.constructor.allowedComponentTypes[fieldName];
 
             if (Array.isArray(value)) {
-                value.forEach((item, idx) => {
+                value.forEach((item) => {
                     if (item instanceof UiComponent) {
                         if (
                             allowed &&
@@ -8981,6 +9118,8 @@ class UiItem extends UiComponent {
         return props;
     }
 }
+
+ComponentTypeMap[UiItem.type] = UiItem;
 
 export { UiButton, UiCodeBlock, UiIcon, UiItem, UiTextField, getConfig, loadConfig, uiRegistry };
 //# sourceMappingURL=index.esm.js.map
