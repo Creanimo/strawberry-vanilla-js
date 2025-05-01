@@ -18,11 +18,11 @@
       $set-size: false, 
       $set-design: true,
 
-      $button-color: s.$lmode_melodic-color-bg,
-      $button-text-color: s.$lmode_melodic-color-text,
+      $button-color: s.$lmode_calm-color-bg,
+      $button-text-color: s.$lmode_calm-color-text,
     );
   }
-  &.melodic {
+  &.calm {
     @include btn-gen.make-button(
       $set-basics: false, 
       $set-size: false, 

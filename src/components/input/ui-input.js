@@ -12,7 +12,7 @@ class UiInput extends UiComponent {
      * @param {string} dataName
      * @param {function():void | null} fetchFunction
      * @param {Dependencies} dependencies
-     * @param {function():void | null} callOnAction
+     * @param {function(Event|null):void | null} callOnAction
      * @param {function(string): ValidationResult | null} validationFunction
      * @param {ValidationResult | null} validationResult
      */
@@ -36,7 +36,7 @@ class UiInput extends UiComponent {
         /** @type {string} */
         this.dataName = dataName;
 
-        /** @type {() => void | null} */
+        /** @type {function(Event | null): void | null} */
         this.callOnAction = callOnAction;
 
         /** @type {function(string): Object | null} */
@@ -54,13 +54,12 @@ class UiInput extends UiComponent {
         };
     }
 
-    getData() {
+    toJSON() {
         return {
-            id: this.id,
-            type: this.type,
-            key: this.dataName,
+            ...super.toJSON(),
             value: this.value,
-        };
+            dataName: this.dataName,
+        }
     }
 
     async render(targetNode) {
@@ -77,21 +76,7 @@ class UiInput extends UiComponent {
     }
 
     async setEventListeners() {
-        const inputElement = document
-            .getElementById(this.id)
-            .querySelector("input");
 
-        const onBlur = async () => {
-            this.value = inputElement.value;
-            if (this.callOnAction) {
-                this.callOnAction();
-            }
-            console.log(`Input UI Component now has value: ${this.value}`);
-            if (this.validationFunction) {
-                await this.validateInput();
-            }
-        };
-        inputElement.addEventListener("blur", onBlur);
     }
 
     async validationResultToAlertChild() {

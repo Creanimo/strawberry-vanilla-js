@@ -24516,7 +24516,7 @@ input {
   border-color: #52B792;
   color: #000;
 }
-.sv-ui__input-button.melodic {
+.sv-ui__input-button.calm {
   background-color: #f8c662;
   color: #1C2541;
   border-width: 1px;
@@ -24524,7 +24524,7 @@ input {
   border-color: #f8c662;
   border-radius: 4px;
 }
-.sv-ui__input-button.melodic:hover {
+.sv-ui__input-button.calm:hover {
   text-decoration: none;
   background-color: rgb(250.1768292683, 215.7256097561, 146.8231707317);
   color: #1C2541;
@@ -24533,7 +24533,7 @@ input {
   border-color: rgb(250.1768292683, 215.7256097561, 146.8231707317);
   box-shadow: inset -2px -2px rgba(0, 0, 0, 0.5098039216);
 }
-.sv-ui__input-button.melodic:active {
+.sv-ui__input-button.calm:active {
   transform: scale(0.95);
   background-color: rgb(252.3536585366, 233.4512195122, 195.6463414634);
   color: #1C2541;
@@ -24542,12 +24542,12 @@ input {
   border-color: rgb(252.3536585366, 233.4512195122, 195.6463414634);
   box-shadow: inset 2px 2px rgba(0, 0, 0, 0.5098039216);
 }
-.sv-ui__input-button.melodic:focus {
+.sv-ui__input-button.calm:focus {
   color: #1C2541;
   text-decoration: none;
 }
-.sv-ui__input-button.melodic[disabled],
-.sv-ui__input-button.melodic fieldset[disabled] {
+.sv-ui__input-button.calm[disabled],
+.sv-ui__input-button.calm fieldset[disabled] {
   background-color: rgb(204.9768292683, 200.6589430894, 192.0231707317);
   color: rgba(28, 37, 65, 0.9);
   border-width: 1px;
@@ -24556,7 +24556,7 @@ input {
   cursor: not-allowed;
   transform: none;
 }
-.sv-ui__input-button.melodic.engaged {
+.sv-ui__input-button.calm.engaged {
   background-color: white;
   border-width: 3px;
   border-style: solid;

@@ -35,6 +35,26 @@ class UiTextField extends UiInput {
             textfieldId: this.textfieldId,
         } 
     }
+
+    async setEventListeners() {
+        await super.setEventListeners();
+        if (this.componentNode) {
+            const inputElement = this.componentNode.querySelector("input");
+            const onBlur = async () => {
+                this.value = inputElement.value;
+                if (this.callOnAction) {
+                    this.callOnAction();
+                }
+
+                if (this.validationFunction) {
+                    await this.validateInput();
+                }
+            };
+            inputElement.addEventListener("blur", onBlur);
+        }
+
+
+    }
 }
 
 ComponentTypeMap[UiTextField.type] = UiTextField;

@@ -5982,7 +5982,7 @@ class UiInput extends UiComponent {
      * @param {string} dataName
      * @param {function():void | null} fetchFunction
      * @param {Dependencies} dependencies
-     * @param {function():void | null} callOnAction
+     * @param {function(Event|null):void | null} callOnAction
      * @param {function(string): ValidationResult | null} validationFunction
      * @param {ValidationResult | null} validationResult
      */
@@ -6006,7 +6006,7 @@ class UiInput extends UiComponent {
         /** @type {string} */
         this.dataName = dataName;
 
-        /** @type {() => void | null} */
+        /** @type {function(Event | null): void | null} */
         this.callOnAction = callOnAction;
 
         /** @type {function(string): Object | null} */
@@ -6024,13 +6024,12 @@ class UiInput extends UiComponent {
         };
     }
 
-    getData() {
+    toJSON() {
         return {
-            id: this.id,
-            type: this.type,
-            key: this.dataName,
+            ...super.toJSON(),
             value: this.value,
-        };
+            dataName: this.dataName,
+        }
     }
 
     async render(targetNode) {
@@ -6047,21 +6046,7 @@ class UiInput extends UiComponent {
     }
 
     async setEventListeners() {
-        const inputElement = document
-            .getElementById(this.id)
-            .querySelector("input");
 
-        const onBlur = async () => {
-            this.value = inputElement.value;
-            if (this.callOnAction) {
-                this.callOnAction();
-            }
-            console.log(`Input UI Component now has value: ${this.value}`);
-            if (this.validationFunction) {
-                await this.validateInput();
-            }
-        };
-        inputElement.addEventListener("blur", onBlur);
     }
 
     async validationResultToAlertChild() {
@@ -6131,31 +6116,60 @@ class UiTextField extends UiInput {
             textfieldId: this.textfieldId,
         } 
     }
+
+    async setEventListeners() {
+        await super.setEventListeners();
+        if (this.componentNode) {
+            const inputElement = this.componentNode.querySelector("input");
+            const onBlur = async () => {
+                this.value = inputElement.value;
+                if (this.callOnAction) {
+                    this.callOnAction();
+                }
+
+                if (this.validationFunction) {
+                    await this.validateInput();
+                }
+            };
+            inputElement.addEventListener("blur", onBlur);
+        }
+
+
+    }
 }
 
 ComponentTypeMap[UiTextField.type] = UiTextField;
 
 /**
- * @typedef {"loud" | "melodic" | "quiet" | "textlink" } ButtonPriority
+ * @typedef {"loud" | "calm" | "quiet" | "textlink" | "menuItem" } ButtonPriority
  */
 
 class UiButton extends UiInput {
     static type = "sv-ui__input-button";
-    /** 
+
+    /**
      * Buttons can either have a linkHref or a callOnAction(), not both
+     * @param id
+     * @param label
+     * @param dataName
+     * @param value
+     * @param fetchFunction
+     * @param dependencies
+     * @param callOnAction
      * @param {ButtonPriority} buttonPriority
+     * @param linkHref
      */
     constructor({
-        id = null,
-        label,
-        dataName = null,
-        value = null,
-        fetchFunction = null,
-        dependencies = dependencyInjection,
-        callOnAction = null,
-        buttonPriority = "quiet",
-        linkHref = null,
-    }) {
+                    id = null,
+                    label,
+                    dataName = null,
+                    value = null,
+                    fetchFunction = null,
+                    dependencies = dependencyInjection,
+                    callOnAction = null,
+                    buttonPriority = "quiet",
+                    linkHref = null,
+                }) {
         super({
             id,
             label,
@@ -6184,17 +6198,22 @@ class UiButton extends UiInput {
 
         this._dependencies.uiRegistry.register(this);
     }
-    
+
     getRenderProperties() {
         return {
             ...super.getRenderProperties(),
-            buttonPriority: this.buttonPriority, 
+            buttonPriority: this.buttonPriority,
             isLink: this._isLink,
         }
     }
 
     async setEventListeners() {
-        
+        await super.setEventListeners();
+        if (this.componentNode) {
+            this.componentNode.addEventListener("mousedown", (event) => {
+                this.callOnAction(event);
+            });
+        }
     }
 }
 
@@ -9010,6 +9029,8 @@ class UiItem extends UiComponent {
     constructor({
         loudIdentifier,
         calmIdentifier,
+        itemForm = "object",
+        mediaIdentifier = null,
         loudProperties = null,
         calmProperties = null,
         quietProperties = null,
@@ -9037,6 +9058,7 @@ class UiItem extends UiComponent {
         this._fields = {
             loudIdentifier,
             calmIdentifier,
+            mediaIdentifier,
             loudProperties,
             calmProperties,
             quietProperties,
@@ -9045,6 +9067,8 @@ class UiItem extends UiComponent {
             quietActions,
             bodyContent,
         };
+
+        this.itemForm = itemForm;
 
         /**
          * List of permanent child components to be rendered into the template.
@@ -9092,6 +9116,8 @@ class UiItem extends UiComponent {
                 });
             }
         }
+
+        this._dependencies.uiRegistry.register(this);
     }
 
     /**
@@ -9102,6 +9128,7 @@ class UiItem extends UiComponent {
      */
     getRenderProperties() {
         const props = super.getRenderProperties();
+        props.itemForm = this.itemForm;
         for (const [fieldName, value] of Object.entries(this._fields)) {
             if (Array.isArray(value)) {
                 // If all items are components, set to empty string

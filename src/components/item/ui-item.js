@@ -46,6 +46,8 @@ class UiItem extends UiComponent {
     constructor({
         loudIdentifier,
         calmIdentifier,
+        itemForm = "object",
+        mediaIdentifier = null,
         loudProperties = null,
         calmProperties = null,
         quietProperties = null,
@@ -73,6 +75,7 @@ class UiItem extends UiComponent {
         this._fields = {
             loudIdentifier,
             calmIdentifier,
+            mediaIdentifier,
             loudProperties,
             calmProperties,
             quietProperties,
@@ -81,6 +84,8 @@ class UiItem extends UiComponent {
             quietActions,
             bodyContent,
         };
+
+        this.itemForm = itemForm;
 
         /**
          * List of permanent child components to be rendered into the template.
@@ -128,6 +133,8 @@ class UiItem extends UiComponent {
                 });
             }
         }
+
+        this._dependencies.uiRegistry.register(this);
     }
 
     /**
@@ -138,6 +145,7 @@ class UiItem extends UiComponent {
      */
     getRenderProperties() {
         const props = super.getRenderProperties();
+        props.itemForm = this.itemForm;
         for (const [fieldName, value] of Object.entries(this._fields)) {
             if (Array.isArray(value)) {
                 // If all items are components, set to empty string

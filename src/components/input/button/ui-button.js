@@ -1,28 +1,37 @@
-import { dependencyInjection } from "../../../tools/commonDependencies.js";
+import {dependencyInjection} from "../../../tools/commonDependencies.js";
 import ComponentTypeMap from "../../component-type-map.js";
 import UiInput from "../ui-input.js";
 
 /**
- * @typedef {"loud" | "melodic" | "quiet" | "textlink" } ButtonPriority
+ * @typedef {"loud" | "calm" | "quiet" | "textlink" | "menuItem" } ButtonPriority
  */
 
 class UiButton extends UiInput {
     static type = "sv-ui__input-button";
-    /** 
+
+    /**
      * Buttons can either have a linkHref or a callOnAction(), not both
+     * @param id
+     * @param label
+     * @param dataName
+     * @param value
+     * @param fetchFunction
+     * @param dependencies
+     * @param callOnAction
      * @param {ButtonPriority} buttonPriority
+     * @param linkHref
      */
     constructor({
-        id = null,
-        label,
-        dataName = null,
-        value = null,
-        fetchFunction = null,
-        dependencies = dependencyInjection,
-        callOnAction = null,
-        buttonPriority = "quiet",
-        linkHref = null,
-    }) {
+                    id = null,
+                    label,
+                    dataName = null,
+                    value = null,
+                    fetchFunction = null,
+                    dependencies = dependencyInjection,
+                    callOnAction = null,
+                    buttonPriority = "quiet",
+                    linkHref = null,
+                }) {
         super({
             id,
             label,
@@ -51,17 +60,22 @@ class UiButton extends UiInput {
 
         this._dependencies.uiRegistry.register(this);
     }
-    
+
     getRenderProperties() {
         return {
             ...super.getRenderProperties(),
-            buttonPriority: this.buttonPriority, 
+            buttonPriority: this.buttonPriority,
             isLink: this._isLink,
         }
     }
 
     async setEventListeners() {
-        
+        await super.setEventListeners();
+        if (this.componentNode) {
+            this.componentNode.addEventListener("mousedown", (event) => {
+                this.callOnAction(event);
+            });
+        }
     }
 }
 

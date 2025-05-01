@@ -56,23 +56,30 @@ loadConfig().then(() => {
     demoTextfieldCode.render(document.getElementById("example-textfield__code"));
 
     async function exampleButtons() {
+        function alertOnClick() {
+            alert("There was a click on a button!")
+        }
+
         const buttonLoud = new UiButton({
             label: "Click me",
             buttonPriority: "loud",
+            callOnAction: alertOnClick,
         });
 
-        const buttonMelodic = new UiButton({
+        const buttonCalm = new UiButton({
             label: "Click me",
-            buttonPriority: "melodic",
+            buttonPriority: "calm",
+            callOnAction: alertOnClick,
         });
 
         const buttonQuiet = new UiButton({
             label: "Click me",
             buttonPriority: "quiet",
+            callOnAction: alertOnClick,
         });
 
         await buttonLoud.render(document.getElementById("example-buttons"));
-        await buttonMelodic.render(document.getElementById("example-buttons"));
+        await buttonCalm.render(document.getElementById("example-buttons"));
         await buttonQuiet.render(document.getElementById("example-buttons"));
     }
     exampleButtons();
