@@ -14,6 +14,7 @@ class UiInput extends UiComponent {
      * @param {Dependencies} dependencies
      * @param {function(Event|null):void | null} callOnAction
      * @param {function(string): ValidationResult | null} validationFunction
+     * @param {boolean} hasEditPreviewToggle
      * @param {ValidationResult | null} validationResult
      */
     constructor({
@@ -25,6 +26,7 @@ class UiInput extends UiComponent {
                     dependencies = dependencyInjection,
                     callOnAction = null,
                     validationFunction = null,
+                    hasEditPreviewToggle = false,
                     validationResult = null,
                 }) {
         super({ id, label, fetchFunction, dependencies });
@@ -44,6 +46,13 @@ class UiInput extends UiComponent {
 
         /** @type {Object | null} */
         this.validationResult = validationResult;
+
+        /** @type {boolean} */
+        this.hasEditPreviewToggle = hasEditPreviewToggle;
+
+        if (this.hasEditPreviewToggle) {
+            this._idEditableField = this._dependencies.createId();
+        }
     }
 
     getRenderProperties() {
@@ -51,6 +60,8 @@ class UiInput extends UiComponent {
             ...super.getRenderProperties(),
             value: this.value,
             dataName: this.dataName,
+            hasEditPreviewToggle: this.hasEditPreviewToggle,
+            idEditableField: this._idEditableField,
         };
     }
 
@@ -59,6 +70,7 @@ class UiInput extends UiComponent {
             ...super.toJSON(),
             value: this.value,
             dataName: this.dataName,
+            hasEditPreviewToggle: this.hasEditPreviewToggle,
         }
     }
 
@@ -76,7 +88,35 @@ class UiInput extends UiComponent {
     }
 
     async setEventListeners() {
+        if (this.hasEditPreviewToggle) {
+            await this.initPreviewEditMode();
+        }
+    }
 
+    async initPreviewEditMode() {
+        const editPreviewToggle = this.componentNode.querySelector("button.sv-ui__edit-mode__preview")
+        const editableField = this.componentNode.querySelector(`[id="${this._idEditableField}"]`);
+        const editPreviewExit = this.componentNode.querySelector(".sv-ui__edit-mode__exit");
+
+        const switchToPreview = async () => {
+            editableField.style.display = "none";
+            editPreviewToggle.style.removeProperty("display");
+            editPreviewToggle.ariaExpanded = "false";
+            await this.handleAction();
+            await this.render();
+        }
+        const switchToEditMode = async () => {
+            editPreviewToggle.style.display = "none";
+            editableField.style.removeProperty("display");
+            editPreviewToggle.ariaExpanded = "true";
+        }
+
+        editPreviewToggle.addEventListener("mousedown", switchToEditMode);
+        editPreviewExit.addEventListener("mousedown", switchToPreview);
+    }
+
+    async handleAction() {
+        this.callOnAction();
     }
 
     async validationResultToAlertChild() {

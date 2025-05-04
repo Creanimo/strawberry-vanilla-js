@@ -20,11 +20,26 @@ class UiTextField extends UiInput {
                 callOnAction = () => { return undefined; },
                 validationFunction = null,
                 validationResult = null,
+                hasEditPreviewToggle = false,
                 dependencies = dependencyInjection,
     }) {
-        super({id, label, dataName, value, fetchFunction, callOnAction, validationFunction, validationResult, dependencies});
+        super({
+            id,
+            label,
+            dataName,
+            value,
+            fetchFunction,
+            callOnAction,
+            validationFunction,
+            validationResult,
+            hasEditPreviewToggle,
+            dependencies});
         this.type = UiTextField.type;
-        this.templatePath = `${this._dependencies.getConfig().templateRoot}input/textfield.html`;
+        if (!hasEditPreviewToggle) {
+            this.templatePath = `${this._dependencies.getConfig().templateRoot}input/textfield.html`;
+        } else {
+            this.templatePath = `${this._dependencies.getConfig().templateRoot}input/textfieldEditPreviewMode.html`;
+        }
         this.textfieldId = this._dependencies.createId(); // used in label for a11y
         this._dependencies.uiRegistry.register(this);
     }
@@ -38,22 +53,19 @@ class UiTextField extends UiInput {
 
     async setEventListeners() {
         await super.setEventListeners();
-        if (this.componentNode) {
-            const inputElement = this.componentNode.querySelector("input");
-            const onBlur = async () => {
-                this.value = inputElement.value;
-                if (this.callOnAction) {
-                    this.callOnAction();
-                }
+        const inputElement = this.componentNode.querySelector("input");
+        inputElement.addEventListener("blur", (event) => this.handleAction(event));
+    }
 
-                if (this.validationFunction) {
-                    await this.validateInput();
-                }
-            };
-            inputElement.addEventListener("blur", onBlur);
-        }
+    async handleAction() {
+            this.value = this.componentNode.querySelector("input").value;
+            if (this.callOnAction) {
+                this.callOnAction();
+            }
 
-
+            if (this.validationFunction) {
+                await this.validateInput();
+            }
     }
 }
 

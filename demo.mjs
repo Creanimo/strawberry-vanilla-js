@@ -43,7 +43,14 @@ loadConfig().then(() => {
             validationFunction: textfieldValidation,
         });
 
+        const demoTextfield2 = new UiTextField({
+            label: "My Name",
+            value: "Eddy Editable",
+            hasEditPreviewToggle: true,
+        })
+
         demoTextfield.render(document.getElementById("example-textfield"));
+        demoTextfield2.render(document.getElementById("example-textfield"));
     }
     exampleTextfield();
 

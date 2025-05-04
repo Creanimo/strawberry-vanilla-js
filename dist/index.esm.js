@@ -5984,6 +5984,7 @@ class UiInput extends UiComponent {
      * @param {Dependencies} dependencies
      * @param {function(Event|null):void | null} callOnAction
      * @param {function(string): ValidationResult | null} validationFunction
+     * @param {boolean} hasEditPreviewToggle
      * @param {ValidationResult | null} validationResult
      */
     constructor({
@@ -5995,6 +5996,7 @@ class UiInput extends UiComponent {
                     dependencies = dependencyInjection,
                     callOnAction = null,
                     validationFunction = null,
+                    hasEditPreviewToggle = false,
                     validationResult = null,
                 }) {
         super({ id, label, fetchFunction, dependencies });
@@ -6014,6 +6016,13 @@ class UiInput extends UiComponent {
 
         /** @type {Object | null} */
         this.validationResult = validationResult;
+
+        /** @type {boolean} */
+        this.hasEditPreviewToggle = hasEditPreviewToggle;
+
+        if (this.hasEditPreviewToggle) {
+            this._idEditableField = this._dependencies.createId();
+        }
     }
 
     getRenderProperties() {
@@ -6021,6 +6030,8 @@ class UiInput extends UiComponent {
             ...super.getRenderProperties(),
             value: this.value,
             dataName: this.dataName,
+            hasEditPreviewToggle: this.hasEditPreviewToggle,
+            idEditableField: this._idEditableField,
         };
     }
 
@@ -6029,6 +6040,7 @@ class UiInput extends UiComponent {
             ...super.toJSON(),
             value: this.value,
             dataName: this.dataName,
+            hasEditPreviewToggle: this.hasEditPreviewToggle,
         }
     }
 
@@ -6046,7 +6058,35 @@ class UiInput extends UiComponent {
     }
 
     async setEventListeners() {
+        if (this.hasEditPreviewToggle) {
+            await this.initPreviewEditMode();
+        }
+    }
 
+    async initPreviewEditMode() {
+        const editPreviewToggle = this.componentNode.querySelector("button.sv-ui__edit-mode__preview");
+        const editableField = this.componentNode.querySelector(`[id="${this._idEditableField}"]`);
+        const editPreviewExit = this.componentNode.querySelector(".sv-ui__edit-mode__exit");
+
+        const switchToPreview = async () => {
+            editableField.style.display = "none";
+            editPreviewToggle.style.removeProperty("display");
+            editPreviewToggle.ariaExpanded = "false";
+            await this.handleAction();
+            await this.render();
+        };
+        const switchToEditMode = async () => {
+            editPreviewToggle.style.display = "none";
+            editableField.style.removeProperty("display");
+            editPreviewToggle.ariaExpanded = "true";
+        };
+
+        editPreviewToggle.addEventListener("mousedown", switchToEditMode);
+        editPreviewExit.addEventListener("mousedown", switchToPreview);
+    }
+
+    async handleAction() {
+        this.callOnAction();
     }
 
     async validationResultToAlertChild() {
@@ -6101,11 +6141,26 @@ class UiTextField extends UiInput {
                 callOnAction = () => { return undefined; },
                 validationFunction = null,
                 validationResult = null,
+                hasEditPreviewToggle = false,
                 dependencies = dependencyInjection,
     }) {
-        super({id, label, dataName, value, fetchFunction, callOnAction, validationFunction, validationResult, dependencies});
+        super({
+            id,
+            label,
+            dataName,
+            value,
+            fetchFunction,
+            callOnAction,
+            validationFunction,
+            validationResult,
+            hasEditPreviewToggle,
+            dependencies});
         this.type = UiTextField.type;
-        this.templatePath = `${this._dependencies.getConfig().templateRoot}input/textfield.html`;
+        if (!hasEditPreviewToggle) {
+            this.templatePath = `${this._dependencies.getConfig().templateRoot}input/textfield.html`;
+        } else {
+            this.templatePath = `${this._dependencies.getConfig().templateRoot}input/textfieldEditPreviewMode.html`;
+        }
         this.textfieldId = this._dependencies.createId(); // used in label for a11y
         this._dependencies.uiRegistry.register(this);
     }
@@ -6119,22 +6174,19 @@ class UiTextField extends UiInput {
 
     async setEventListeners() {
         await super.setEventListeners();
-        if (this.componentNode) {
-            const inputElement = this.componentNode.querySelector("input");
-            const onBlur = async () => {
-                this.value = inputElement.value;
-                if (this.callOnAction) {
-                    this.callOnAction();
-                }
+        const inputElement = this.componentNode.querySelector("input");
+        inputElement.addEventListener("blur", (event) => this.handleAction(event));
+    }
 
-                if (this.validationFunction) {
-                    await this.validateInput();
-                }
-            };
-            inputElement.addEventListener("blur", onBlur);
-        }
+    async handleAction() {
+            this.value = this.componentNode.querySelector("input").value;
+            if (this.callOnAction) {
+                this.callOnAction();
+            }
 
-
+            if (this.validationFunction) {
+                await this.validateInput();
+            }
     }
 }
 
