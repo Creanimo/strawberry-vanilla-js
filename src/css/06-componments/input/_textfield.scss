@@ -3,21 +3,17 @@
 @use "../../04-layout/spacings" as l-sp;
 
 .sv-ui__input-textfield {
-  display: grid;
-  grid-template-areas:  "label label"
-                        "input check"
-                        "alert alert";
-  grid-template-columns: 1fr max-content;
-  max-width: s.$form-width;
+  input {
+    @extend %input_one-liner-box;
+    grid-area: input;
+  }
 
   label {
     grid-area: label;
   }
 
-  input {
-    @extend %input_one-liner-box;
-    margin-top: s.$spacing_tight;
-    grid-area: input;
+  &__helptext {
+    grid-area: help;
   }
 
   .validationAlert {
@@ -38,6 +34,55 @@
     .success {
       color: s.$lmode_gentle-shade_silent;
       background-color: s.$lmode_success-color;
+    }
+  }
+
+  &:not(.hasEditPreviewMode) {
+    display: grid;
+    grid-template-areas:  "label label"
+                        "help help"
+                        "input check"
+                        "alert alert";
+    grid-template-columns: 1fr max-content;
+    gap: s.$spacing_tight;
+    max-width: s.$form-width;
+
+    label {
+      @extend %input_label;
+    }
+  }
+
+  &.hasEditPreviewMode {
+    .sv-ui__edit-mode {
+      &__preview {
+        text-align: start;
+        cursor: pointer;
+        @extend %input_one-liner-box--frameless;
+        padding-inline-start: 0;
+        .sv-ui__edit-mode__edit-indicator {
+          display: none;
+        }
+        &:hover, &:focus-visible {
+          .sv-ui__edit-mode__edit-indicator {
+            display: inline-block;
+          }
+        }
+      }
+      &__editable {
+        display: grid;
+        gap: s.$spacing_tight;
+        grid-template-areas:
+            "label help help"
+            "label input exit"
+            "alert alert alert";
+        grid-template-columns: auto 1fr max-content;
+        label {
+          align-self: center;
+        }
+      }
+      &__exit {
+        grid-area: exit;
+      }
     }
   }
 }

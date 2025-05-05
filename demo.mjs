@@ -40,17 +40,26 @@ loadConfig().then(() => {
             id: "demo_textfield",
             label: "Label for Textfield",
             value: "",
+            helptext: "A very helpful helptext.",
             validationFunction: textfieldValidation,
         });
 
         const demoTextfield2 = new UiTextField({
             label: "My Name",
-            value: "Eddy Editable",
+            value: "Charlie Changemyname",
             hasEditPreviewToggle: true,
+        })
+
+        const demoTextfield3 = new UiTextField({
+            label: "Current Location",
+            value: "Cologne",
+            hasEditPreviewToggle: true,
+            hasEditPreviewLabel: true,
         })
 
         demoTextfield.render(document.getElementById("example-textfield"));
         demoTextfield2.render(document.getElementById("example-textfield"));
+        demoTextfield3.render(document.getElementById("example-textfield"));
     }
     exampleTextfield();
 

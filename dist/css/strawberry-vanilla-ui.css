@@ -24370,11 +24370,6 @@ body {
   color: #1C2541;
 }
 
-label {
-  font-size: 1.15rem;
-  font-weight: bold;
-}
-
 input {
   padding: 4px 8px;
   min-height: 36px;
@@ -24408,18 +24403,30 @@ input {
   box-shadow: 0 0 20px 0px #52B792;
 }
 
-.sv-ui__input-textfield {
-  display: grid;
-  grid-template-areas: "label label" "input check" "alert alert";
-  grid-template-columns: 1fr max-content;
-  max-width: 500px;
+.sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview {
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 8px;
+  background-color: transparent;
+}
+.sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview:focus, .sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview:focus-visible {
+  box-shadow: 0 0 20px 0px #52B792;
+}
+
+.sv-ui__input-textfield:not(.hasEditPreviewMode) label {
+  font-size: 1.15rem;
+  font-weight: bold;
+}
+
+.sv-ui__input-textfield input {
+  grid-area: input;
 }
 .sv-ui__input-textfield label {
   grid-area: label;
 }
-.sv-ui__input-textfield input {
-  margin-top: 4px;
-  grid-area: input;
+.sv-ui__input-textfield__helptext {
+  grid-area: help;
 }
 .sv-ui__input-textfield .validationAlert {
   grid-area: alert;
@@ -24440,6 +24447,36 @@ input {
 .sv-ui__input-textfield .validationAlert .success {
   color: #FFF6EB;
   background-color: #007924;
+}
+.sv-ui__input-textfield:not(.hasEditPreviewMode) {
+  display: grid;
+  grid-template-areas: "label label" "help help" "input check" "alert alert";
+  grid-template-columns: 1fr max-content;
+  gap: 4px;
+  max-width: 500px;
+}
+.sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview {
+  text-align: start;
+  cursor: pointer;
+  padding-inline-start: 0;
+}
+.sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview .sv-ui__edit-mode__edit-indicator {
+  display: none;
+}
+.sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview:hover .sv-ui__edit-mode__edit-indicator, .sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview:focus-visible .sv-ui__edit-mode__edit-indicator {
+  display: inline-block;
+}
+.sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__editable {
+  display: grid;
+  gap: 4px;
+  grid-template-areas: "label help help" "label input exit" "alert alert alert";
+  grid-template-columns: auto 1fr max-content;
+}
+.sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__editable label {
+  align-self: center;
+}
+.sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__exit {
+  grid-area: exit;
 }
 
 .sv-ui__input-button {

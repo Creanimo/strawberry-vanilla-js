@@ -160,7 +160,7 @@ class UiComponent {
     /**
      * @param {boolean} state
      */
-    async setLoading(state, showLoading = this.showLoading) {
+    async setLoading(state, showLoading = this.showLoading, replace = true) {
         if (state && showLoading) {
             const loadingTemplate = await this._dependencies.loadTemplate(
                 `${this._dependencies.getConfig().templateRoot}loading.html`,
@@ -168,20 +168,21 @@ class UiComponent {
             const loadingNode = await this._dependencies.renderTpl(loadingTemplate, {
                 id: this.id,
             });
-            this.componentNode = await loadingNode;
+            this.componentNode = loadingNode;
 
-            this.removeFromDom();
-
-            if (this.targetNode) {
-                this.targetNode.appendChild(this.componentNode);
-            }
+            this.replaceOrAppendNode(
+                this.componentNode,
+                this.id,
+                this.targetNode,
+                replace
+            );
         }
-
         this.loading = state;
         this._dependencies.log.trace(
             `${this.type} with ID ${this.id}: loading state is ${this.loading}`,
         );
     }
+
 
     removeFromDom() {
         const staleComponent = document.getElementById(this.id);
@@ -201,7 +202,7 @@ class UiComponent {
             this.targetNode = targetNode;
         }
 
-        await this.setLoading(true, showLoading);
+        await this.setLoading(true, showLoading, replace);
         this._dependencies.log.trace(
             `${this.type} with ID ${this.id}: append loading html done.`,
         );
@@ -248,19 +249,12 @@ class UiComponent {
 
             this.componentNode = tempNode.firstChild;
 
-            const existingNode = document.getElementById(this.id);
-            if (replace && existingNode) {
-                existingNode.replaceWith(this.componentNode);
-                this._dependencies.log.info(
-                    `${this.type} with ID ${this.id}: replaced componentNode with tempNode in DOM.`,
-                );
-            } else if (this.targetNode) {
-                // fallback: append if not found
-                this.targetNode.appendChild(this.componentNode);
-                this._dependencies.log.info(
-                    `${this.type} with ID ${this.id}: appended componentNode in DOM targetNode.`,
-                );
-            }
+            this.replaceOrAppendNode(
+                this.componentNode,
+                this.id,
+                this.targetNode,
+                replace
+            );
         } catch (error) {
             this._dependencies.log.error(
                 { errorMessage: error.message, errorStack: error.stack, error },
@@ -271,6 +265,29 @@ class UiComponent {
             this._dependencies.uiRegistry.updateStatus(this.id, "rendered");
             this._dependencies.log.trace(
                 `${this.type} with ID ${this.id}: loading state has been set to false (rendering final step).`,
+            );
+        }
+    }
+
+
+    /**
+     * Replaces or appends a node in the DOM.
+     * @param {HTMLElement} newNode - The node to insert.
+     * @param {string} id - The id to look for in the DOM.
+     * @param {HTMLElement} targetNode - The parent node to append to if not replacing.
+     * @param {boolean} replace - Whether to replace an existing node.
+     */
+    replaceOrAppendNode(newNode, id, targetNode, replace = true) {
+        const existingNode = document.getElementById(id);
+        if (replace && existingNode && existingNode.parentNode) {
+            existingNode.replaceWith(newNode);
+            this._dependencies.log.info(
+                `${this.type} with ID ${id}: replaced node in DOM.`,
+            );
+        } else if (targetNode) {
+            targetNode.appendChild(newNode);
+            this._dependencies.log.info(
+                `${this.type} with ID ${id}: appended node in DOM targetNode.`,
             );
         }
     }

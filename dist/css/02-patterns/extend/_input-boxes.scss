@@ -7,7 +7,25 @@
   border-radius: s.$border-radius_decorative-small;
   padding: l-sp.$padding_tight;
   background-color: s.$lmode_gentle-shade_silent;
+
   &:focus, &:focus-visible {
     box-shadow: 0 0 20px 0px s.$lmode_calm-color-bg;
   }
+}
+
+%input_one-liner-box--frameless {
+  min-height: s.$input_min-height;
+  border: s.$lmode_border-transparent;
+  border-radius: s.$border-radius_decorative-small;
+  padding: l-sp.$padding_tight;
+  background-color: transparent;
+
+  &:focus, &:focus-visible {
+    box-shadow: 0 0 20px 0px s.$lmode_calm-color-bg;
+  }
+}
+
+%input_label {
+  font-size: s.$font-size_calm;
+  font-weight: s.$font-weight_calm;
 }

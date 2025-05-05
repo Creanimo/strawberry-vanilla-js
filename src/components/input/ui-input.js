@@ -10,11 +10,13 @@ class UiInput extends UiComponent {
      * @param {string} label
      * @param {string} value
      * @param {string} dataName
+     * @param {string} helptext
      * @param {function():void | null} fetchFunction
      * @param {Dependencies} dependencies
      * @param {function(Event|null):void | null} callOnAction
      * @param {function(string): ValidationResult | null} validationFunction
      * @param {boolean} hasEditPreviewToggle
+     * @param {boolean} hasEditPreviewLabel
      * @param {ValidationResult | null} validationResult
      */
     constructor({
@@ -22,11 +24,13 @@ class UiInput extends UiComponent {
                     label,
                     dataName = label,
                     value = null,
+                    helptext = null,
                     fetchFunction = null,
                     dependencies = dependencyInjection,
                     callOnAction = null,
                     validationFunction = null,
                     hasEditPreviewToggle = false,
+                    hasEditPreviewLabel = false,
                     validationResult = null,
                 }) {
         super({ id, label, fetchFunction, dependencies });
@@ -34,6 +38,8 @@ class UiInput extends UiComponent {
 
         /** @type {string} */
         this.value = value;
+
+        this.helptext = helptext;
 
         /** @type {string} */
         this.dataName = dataName;
@@ -50,9 +56,15 @@ class UiInput extends UiComponent {
         /** @type {boolean} */
         this.hasEditPreviewToggle = hasEditPreviewToggle;
 
+        /** @type {boolean} */
+        this.hasEditPreviewLabel = hasEditPreviewLabel;
+
         if (this.hasEditPreviewToggle) {
             this._idEditableField = this._dependencies.createId();
         }
+
+        this._onSwitchToPreview = null;
+        this._onSwitchToEditMode = null;
     }
 
     getRenderProperties() {
@@ -60,7 +72,8 @@ class UiInput extends UiComponent {
             ...super.getRenderProperties(),
             value: this.value,
             dataName: this.dataName,
-            hasEditPreviewToggle: this.hasEditPreviewToggle,
+            helptext: this.helptext,
+            hasEditPreviewLabel: this.hasEditPreviewLabel,
             idEditableField: this._idEditableField,
         };
     }
@@ -94,26 +107,46 @@ class UiInput extends UiComponent {
     }
 
     async initPreviewEditMode() {
-        const editPreviewToggle = this.componentNode.querySelector("button.sv-ui__edit-mode__preview")
+        const editPreviewToggle = this.componentNode.querySelector("button.sv-ui__edit-mode__preview");
+        const editPreviewToggleValue = this.componentNode.querySelector(".sv-ui__edit-mode__preview-value");
         const editableField = this.componentNode.querySelector(`[id="${this._idEditableField}"]`);
         const editPreviewExit = this.componentNode.querySelector(".sv-ui__edit-mode__exit");
 
-        const switchToPreview = async () => {
-            editableField.style.display = "none";
-            editPreviewToggle.style.removeProperty("display");
-            editPreviewToggle.ariaExpanded = "false";
-            await this.handleAction();
-            await this.render();
-        }
-        const switchToEditMode = async () => {
-            editPreviewToggle.style.display = "none";
-            editableField.style.removeProperty("display");
-            editPreviewToggle.ariaExpanded = "true";
-        }
+        this._editPreviewElements = {
+            editPreviewToggle,
+            editPreviewToggleValue,
+            editableField,
+            editPreviewExit,
+        };
 
-        editPreviewToggle.addEventListener("mousedown", switchToEditMode);
-        editPreviewExit.addEventListener("mousedown", switchToPreview);
+        editPreviewToggle.addEventListener("mousedown", () => this.switchToEditMode());
+        editPreviewExit.addEventListener("mousedown", () => this.switchToPreview());
     }
+
+    async switchToPreview() {
+        const { editPreviewToggle, editPreviewToggleValue, editableField } = this._editPreviewElements;
+        editableField.style.display = "none";
+        editPreviewToggle.style.removeProperty("display");
+        editPreviewToggle.ariaExpanded = "false";
+        await this.handleAction();
+        editPreviewToggleValue.textContent = this.value;
+
+        if (typeof this._onSwitchToPreview === "function") {
+            await this._onSwitchToPreview();
+        }
+    }
+
+    async switchToEditMode() {
+        const { editPreviewToggle, editableField } = this._editPreviewElements;
+        editPreviewToggle.style.display = "none";
+        editableField.style.removeProperty("display");
+        editPreviewToggle.ariaExpanded = "true";
+
+        if (typeof this._onSwitchToEditMode === "function") {
+            await this._onSwitchToEditMode();
+        }
+    }
+
 
     async handleAction() {
         this.callOnAction();

@@ -18,9 +18,11 @@ class UiTextField extends UiInput {
                 value,
                 fetchFunction = null,
                 callOnAction = () => { return undefined; },
+                helptext = null,
                 validationFunction = null,
                 validationResult = null,
                 hasEditPreviewToggle = false,
+                hasEditPreviewLabel = false,
                 dependencies = dependencyInjection,
     }) {
         super({
@@ -28,11 +30,13 @@ class UiTextField extends UiInput {
             label,
             dataName,
             value,
+            helptext,
             fetchFunction,
             callOnAction,
             validationFunction,
             validationResult,
             hasEditPreviewToggle,
+            hasEditPreviewLabel,
             dependencies});
         this.type = UiTextField.type;
         if (!hasEditPreviewToggle) {
@@ -42,6 +46,14 @@ class UiTextField extends UiInput {
         }
         this.textfieldId = this._dependencies.createId(); // used in label for a11y
         this._dependencies.uiRegistry.register(this);
+        this._onSwitchToEditMode = () => {
+            console.log("on switch to edit mode was executed");
+            const input = this.componentNode.querySelector("input");
+            if (input) {
+                setTimeout(() => input.focus(), 0);
+            }
+        };
+
     }
 
     getRenderProperties() {
@@ -67,6 +79,7 @@ class UiTextField extends UiInput {
                 await this.validateInput();
             }
     }
+
 }
 
 ComponentTypeMap[UiTextField.type] = UiTextField;

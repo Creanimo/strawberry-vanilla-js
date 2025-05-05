@@ -1,14 +1,14 @@
-<div id="{{id}}" class="{{type}}">
+<div id="{{id}}" class="{{type}} hasEditPreviewMode">
     <button aria-controls="{{idEditableField}}" aria-expanded="false" class="sv-ui__edit-mode__preview">
-        <span class="sv-ui__edit-mode__preview-value">{{value}}</span>
+        {{#hasEditPreviewLabel}}<span class="sv-ui__edit-mode__preview-label">{{label}}: </span>{{/hasEditPreviewLabel}}<span class="sv-ui__edit-mode__preview-value">{{value}}</span> <span class="sv-ui__edit-mode__edit-indicator ti ti-edit"></span>
     </button>
     <div id="{{idEditableField}}" class="sv-ui__edit-mode__editable" style="display: none;">
-        <label for="{{textfieldId}}">{{label}}</label>
+        {{#hasEditPreviewLabel}}<label for="{{textfieldId}}">{{label}}</label>{{/hasEditPreviewLabel}}
         {{#helptext}}
         <div class="sv-ui__input-textfield__helptext">{{helptext}}</div>
         {{/helptext}}
         <input type="text" id="{{textfieldId}}" name="{{label}}" value="{{value}}"/>
         <div class="validationAlert"></div>
-        <button class="sv-ui__edit-mode__exit" type="button" aria-controls="{{idEditableField}}" class="sv-ui__input-button quiet"><span class="ti ti-check" aria-label="Done Editing"></span></button>
+        <button type="button" aria-controls="{{idEditableField}}" class="sv-ui__edit-mode__exit sv-ui__input-button quiet"><span class="ti ti-check" aria-label="Done Editing"></span></button>
     </div>
 </div>

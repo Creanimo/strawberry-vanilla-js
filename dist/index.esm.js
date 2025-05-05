@@ -5761,7 +5761,7 @@ class UiComponent {
     /**
      * @param {boolean} state
      */
-    async setLoading(state, showLoading = this.showLoading) {
+    async setLoading(state, showLoading = this.showLoading, replace = true) {
         if (state && showLoading) {
             const loadingTemplate = await this._dependencies.loadTemplate(
                 `${this._dependencies.getConfig().templateRoot}loading.html`,
@@ -5769,20 +5769,21 @@ class UiComponent {
             const loadingNode = await this._dependencies.renderTpl(loadingTemplate, {
                 id: this.id,
             });
-            this.componentNode = await loadingNode;
+            this.componentNode = loadingNode;
 
-            this.removeFromDom();
-
-            if (this.targetNode) {
-                this.targetNode.appendChild(this.componentNode);
-            }
+            this.replaceOrAppendNode(
+                this.componentNode,
+                this.id,
+                this.targetNode,
+                replace
+            );
         }
-
         this.loading = state;
         this._dependencies.log.trace(
             `${this.type} with ID ${this.id}: loading state is ${this.loading}`,
         );
     }
+
 
     removeFromDom() {
         const staleComponent = document.getElementById(this.id);
@@ -5802,7 +5803,7 @@ class UiComponent {
             this.targetNode = targetNode;
         }
 
-        await this.setLoading(true, showLoading);
+        await this.setLoading(true, showLoading, replace);
         this._dependencies.log.trace(
             `${this.type} with ID ${this.id}: append loading html done.`,
         );
@@ -5849,19 +5850,12 @@ class UiComponent {
 
             this.componentNode = tempNode.firstChild;
 
-            const existingNode = document.getElementById(this.id);
-            if (replace && existingNode) {
-                existingNode.replaceWith(this.componentNode);
-                this._dependencies.log.info(
-                    `${this.type} with ID ${this.id}: replaced componentNode with tempNode in DOM.`,
-                );
-            } else if (this.targetNode) {
-                // fallback: append if not found
-                this.targetNode.appendChild(this.componentNode);
-                this._dependencies.log.info(
-                    `${this.type} with ID ${this.id}: appended componentNode in DOM targetNode.`,
-                );
-            }
+            this.replaceOrAppendNode(
+                this.componentNode,
+                this.id,
+                this.targetNode,
+                replace
+            );
         } catch (error) {
             this._dependencies.log.error(
                 { errorMessage: error.message, errorStack: error.stack, error },
@@ -5872,6 +5866,29 @@ class UiComponent {
             this._dependencies.uiRegistry.updateStatus(this.id, "rendered");
             this._dependencies.log.trace(
                 `${this.type} with ID ${this.id}: loading state has been set to false (rendering final step).`,
+            );
+        }
+    }
+
+
+    /**
+     * Replaces or appends a node in the DOM.
+     * @param {HTMLElement} newNode - The node to insert.
+     * @param {string} id - The id to look for in the DOM.
+     * @param {HTMLElement} targetNode - The parent node to append to if not replacing.
+     * @param {boolean} replace - Whether to replace an existing node.
+     */
+    replaceOrAppendNode(newNode, id, targetNode, replace = true) {
+        const existingNode = document.getElementById(id);
+        if (replace && existingNode && existingNode.parentNode) {
+            existingNode.replaceWith(newNode);
+            this._dependencies.log.info(
+                `${this.type} with ID ${id}: replaced node in DOM.`,
+            );
+        } else if (targetNode) {
+            targetNode.appendChild(newNode);
+            this._dependencies.log.info(
+                `${this.type} with ID ${id}: appended node in DOM targetNode.`,
             );
         }
     }
@@ -5980,11 +5997,13 @@ class UiInput extends UiComponent {
      * @param {string} label
      * @param {string} value
      * @param {string} dataName
+     * @param {string} helptext
      * @param {function():void | null} fetchFunction
      * @param {Dependencies} dependencies
      * @param {function(Event|null):void | null} callOnAction
      * @param {function(string): ValidationResult | null} validationFunction
      * @param {boolean} hasEditPreviewToggle
+     * @param {boolean} hasEditPreviewLabel
      * @param {ValidationResult | null} validationResult
      */
     constructor({
@@ -5992,11 +6011,13 @@ class UiInput extends UiComponent {
                     label,
                     dataName = label,
                     value = null,
+                    helptext = null,
                     fetchFunction = null,
                     dependencies = dependencyInjection,
                     callOnAction = null,
                     validationFunction = null,
                     hasEditPreviewToggle = false,
+                    hasEditPreviewLabel = false,
                     validationResult = null,
                 }) {
         super({ id, label, fetchFunction, dependencies });
@@ -6004,6 +6025,8 @@ class UiInput extends UiComponent {
 
         /** @type {string} */
         this.value = value;
+
+        this.helptext = helptext;
 
         /** @type {string} */
         this.dataName = dataName;
@@ -6020,9 +6043,15 @@ class UiInput extends UiComponent {
         /** @type {boolean} */
         this.hasEditPreviewToggle = hasEditPreviewToggle;
 
+        /** @type {boolean} */
+        this.hasEditPreviewLabel = hasEditPreviewLabel;
+
         if (this.hasEditPreviewToggle) {
             this._idEditableField = this._dependencies.createId();
         }
+
+        this._onSwitchToPreview = null;
+        this._onSwitchToEditMode = null;
     }
 
     getRenderProperties() {
@@ -6030,7 +6059,8 @@ class UiInput extends UiComponent {
             ...super.getRenderProperties(),
             value: this.value,
             dataName: this.dataName,
-            hasEditPreviewToggle: this.hasEditPreviewToggle,
+            helptext: this.helptext,
+            hasEditPreviewLabel: this.hasEditPreviewLabel,
             idEditableField: this._idEditableField,
         };
     }
@@ -6065,25 +6095,45 @@ class UiInput extends UiComponent {
 
     async initPreviewEditMode() {
         const editPreviewToggle = this.componentNode.querySelector("button.sv-ui__edit-mode__preview");
+        const editPreviewToggleValue = this.componentNode.querySelector(".sv-ui__edit-mode__preview-value");
         const editableField = this.componentNode.querySelector(`[id="${this._idEditableField}"]`);
         const editPreviewExit = this.componentNode.querySelector(".sv-ui__edit-mode__exit");
 
-        const switchToPreview = async () => {
-            editableField.style.display = "none";
-            editPreviewToggle.style.removeProperty("display");
-            editPreviewToggle.ariaExpanded = "false";
-            await this.handleAction();
-            await this.render();
-        };
-        const switchToEditMode = async () => {
-            editPreviewToggle.style.display = "none";
-            editableField.style.removeProperty("display");
-            editPreviewToggle.ariaExpanded = "true";
+        this._editPreviewElements = {
+            editPreviewToggle,
+            editPreviewToggleValue,
+            editableField,
+            editPreviewExit,
         };
 
-        editPreviewToggle.addEventListener("mousedown", switchToEditMode);
-        editPreviewExit.addEventListener("mousedown", switchToPreview);
+        editPreviewToggle.addEventListener("mousedown", () => this.switchToEditMode());
+        editPreviewExit.addEventListener("mousedown", () => this.switchToPreview());
     }
+
+    async switchToPreview() {
+        const { editPreviewToggle, editPreviewToggleValue, editableField } = this._editPreviewElements;
+        editableField.style.display = "none";
+        editPreviewToggle.style.removeProperty("display");
+        editPreviewToggle.ariaExpanded = "false";
+        await this.handleAction();
+        editPreviewToggleValue.textContent = this.value;
+
+        if (typeof this._onSwitchToPreview === "function") {
+            await this._onSwitchToPreview();
+        }
+    }
+
+    async switchToEditMode() {
+        const { editPreviewToggle, editableField } = this._editPreviewElements;
+        editPreviewToggle.style.display = "none";
+        editableField.style.removeProperty("display");
+        editPreviewToggle.ariaExpanded = "true";
+
+        if (typeof this._onSwitchToEditMode === "function") {
+            await this._onSwitchToEditMode();
+        }
+    }
+
 
     async handleAction() {
         this.callOnAction();
@@ -6139,9 +6189,11 @@ class UiTextField extends UiInput {
                 value,
                 fetchFunction = null,
                 callOnAction = () => { return undefined; },
+                helptext = null,
                 validationFunction = null,
                 validationResult = null,
                 hasEditPreviewToggle = false,
+                hasEditPreviewLabel = false,
                 dependencies = dependencyInjection,
     }) {
         super({
@@ -6149,11 +6201,13 @@ class UiTextField extends UiInput {
             label,
             dataName,
             value,
+            helptext,
             fetchFunction,
             callOnAction,
             validationFunction,
             validationResult,
             hasEditPreviewToggle,
+            hasEditPreviewLabel,
             dependencies});
         this.type = UiTextField.type;
         if (!hasEditPreviewToggle) {
@@ -6163,6 +6217,14 @@ class UiTextField extends UiInput {
         }
         this.textfieldId = this._dependencies.createId(); // used in label for a11y
         this._dependencies.uiRegistry.register(this);
+        this._onSwitchToEditMode = () => {
+            console.log("on switch to edit mode was executed");
+            const input = this.componentNode.querySelector("input");
+            if (input) {
+                setTimeout(() => input.focus(), 0);
+            }
+        };
+
     }
 
     getRenderProperties() {
@@ -6188,6 +6250,7 @@ class UiTextField extends UiInput {
                 await this.validateInput();
             }
     }
+
 }
 
 ComponentTypeMap[UiTextField.type] = UiTextField;
