@@ -24350,7 +24350,7 @@
   margin: 0 auto;
 }
 
-* {
+*, *:before, *:after {
   box-sizing: border-box;
 }
 
@@ -24372,7 +24372,7 @@ body {
 
 input {
   padding: 4px 8px;
-  min-height: 36px;
+  min-height: 40px;
 }
 
 .sv-ui__codeBlock pre {
@@ -24393,7 +24393,7 @@ input {
 }
 
 .sv-ui__input-textfield input {
-  min-height: 36px;
+  min-height: 40px;
   border: 1px solid #535C77;
   border-radius: 4px;
   padding: 4px 8px;
@@ -24404,7 +24404,7 @@ input {
 }
 
 .sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview {
-  min-height: 36px;
+  min-height: 40px;
   border: 1px solid transparent;
   border-radius: 4px;
   padding: 4px 8px;
@@ -24456,6 +24456,7 @@ input {
   max-width: 500px;
 }
 .sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview {
+  width: 100%;
   text-align: start;
   cursor: pointer;
   padding-inline-start: 0;
@@ -24463,20 +24464,29 @@ input {
 .sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview .sv-ui__edit-mode__edit-indicator {
   display: none;
 }
+.sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview:hover, .sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview:focus-visible {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 2px;
+}
 .sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview:hover .sv-ui__edit-mode__edit-indicator, .sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__preview:focus-visible .sv-ui__edit-mode__edit-indicator {
   display: inline-block;
 }
 .sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__editable {
   display: grid;
-  gap: 4px;
   grid-template-areas: "label help help" "label input exit" "alert alert alert";
   grid-template-columns: auto 1fr max-content;
 }
 .sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__editable label {
+  margin-inline-end: 8px;
   align-self: center;
 }
 .sv-ui__input-textfield.hasEditPreviewMode .sv-ui__edit-mode__exit {
+  margin-inline-start: 8px;
   grid-area: exit;
+}
+.sv-ui__input-textfield + * {
+  margin-top: 8px;
 }
 
 .sv-ui__input-button {
@@ -24493,8 +24503,8 @@ input {
   font-size: inherit;
   font-weight: inherit;
   text-decoration: none;
-  min-height: 36px;
-  min-width: 36px;
+  min-height: 40px;
+  min-width: 40px;
   font-size: inherit;
   padding: 5px 10px;
   gap: 5px;

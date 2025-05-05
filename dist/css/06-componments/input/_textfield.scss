@@ -55,6 +55,7 @@
   &.hasEditPreviewMode {
     .sv-ui__edit-mode {
       &__preview {
+        width: 100%;
         text-align: start;
         cursor: pointer;
         @extend %input_one-liner-box--frameless;
@@ -63,6 +64,9 @@
           display: none;
         }
         &:hover, &:focus-visible {
+          text-decoration: underline;
+          text-decoration-style: dotted;
+          text-decoration-thickness: 2px;
           .sv-ui__edit-mode__edit-indicator {
             display: inline-block;
           }
@@ -70,19 +74,23 @@
       }
       &__editable {
         display: grid;
-        gap: s.$spacing_tight;
         grid-template-areas:
             "label help help"
             "label input exit"
             "alert alert alert";
         grid-template-columns: auto 1fr max-content;
         label {
+          margin-inline-end: s.$spacing_comfy;
           align-self: center;
         }
       }
       &__exit {
+        margin-inline-start: s.$spacing_comfy;
         grid-area: exit;
       }
     }
+  }
+  + * {
+    margin-top: s.$spacing_comfy;
   }
 }
