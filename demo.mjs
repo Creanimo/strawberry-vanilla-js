@@ -10,8 +10,8 @@ import {
 
 window.uiRegistry = uiRegistry;
 
-loadConfig().then(() => {
-    function exampleTextfield() {
+loadConfig().then(async () => {
+    async function exampleTextfield() {
         function textfieldValidation(value) {
             if (value === "") {
                 return {
@@ -57,11 +57,11 @@ loadConfig().then(() => {
             hasEditPreviewLabel: true,
         })
 
-        demoTextfield.render(document.getElementById("example-textfield"));
-        demoTextfield2.render(document.getElementById("example-textfield"));
-        demoTextfield3.render(document.getElementById("example-textfield"));
+        await demoTextfield.render(document.getElementById("example-textfield"));
+        await demoTextfield2.render(document.getElementById("example-textfield"));
+        await demoTextfield3.render(document.getElementById("example-textfield"));
     }
-    exampleTextfield();
+    await exampleTextfield();
 
     const demoTextfieldCode = new UiCodeBlock({
         label: "Code of Textfield Example",
@@ -69,7 +69,7 @@ loadConfig().then(() => {
         language: "javascript",
     });
 
-    demoTextfieldCode.render(document.getElementById("example-textfield__code"));
+    await demoTextfieldCode.render(document.getElementById("example-textfield__code"));
 
     async function exampleButtons() {
         function alertOnClick() {
@@ -98,7 +98,7 @@ loadConfig().then(() => {
         await buttonCalm.render(document.getElementById("example-buttons"));
         await buttonQuiet.render(document.getElementById("example-buttons"));
     }
-    exampleButtons();
+    await exampleButtons();
 
     const demoButtonsCode = new UiCodeBlock({
         label: "Code of Buttons Example",
@@ -124,7 +124,7 @@ loadConfig().then(() => {
             await icon.render(document.getElementById("example-icons"));
         }
     }
-    exampleIcons();
+    await exampleIcons();
 
     const demoIconsCode = new UiCodeBlock({
         label: "Code of Icons Example",
@@ -132,12 +132,19 @@ loadConfig().then(() => {
         language: "javascript",
     });
 
-    demoIconsCode.render(document.getElementById("example-icons__code"));
+    await demoIconsCode.render(document.getElementById("example-icons__code"));
 
     async function exampleItem() {
+        const iconSmile = new UiIcon({
+            label: "A smiling emoji",
+            iconClass: "ti-mood-smile"
+        })
+
         const item = new UiItem({
             loudIdentifier: "Main Title",
             calmIdentifier: "Subtitle",
+            mediaIdentifier: iconSmile,
+            actionProperty: "action Prop",
             loudAction: new UiButton({
                 label: "Very Important Action",
                 buttonPriority: "loud",
@@ -151,5 +158,14 @@ loadConfig().then(() => {
         await item.render(document.getElementById("example-item"));
         console.log(item.toJSON());
     }
-    exampleItem();
+    await exampleItem();
+
+    const demoItemCode = new UiCodeBlock({
+        label: "Code of Items Example",
+        code: String(exampleItem),
+        language: "javascript",
+    });
+
+    await demoItemCode.render(document.getElementById("example-item__code"));
+
 });

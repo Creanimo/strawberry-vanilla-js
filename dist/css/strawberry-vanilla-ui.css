@@ -24658,4 +24658,39 @@ input {
   color: #000;
 }
 
+.sv-ui__item--object {
+  display: grid;
+  grid-template-areas: "mediaIdent loudProps actions" "mediaIdent loudIdent loudIdent" "mediaIdent calmIdent calmIdent" "calmProps calmProps calmProps" "content content content" "quietProps quietProps quietAct";
+}
+.sv-ui__item--object .sv-ui__item__mediaIdentifier {
+  grid-area: mediaIdent;
+}
+.sv-ui__item--object .sv-ui__item__loudIdentifier {
+  font-size: 1.8rem;
+  font-weight: bold;
+  grid-area: loudIdent;
+}
+.sv-ui__item--object .sv-ui__item__calmIdentifier {
+  font-size: 1.3rem;
+  font-weight: bold;
+  grid-area: calmIdent;
+}
+.sv-ui__item--object .sv-ui__item__actions {
+  display: flex;
+  flex-direction: row;
+  grid-area: actions;
+}
+.sv-ui__item--object .sv-ui__item__calmProperties {
+  grid-area: calmProps;
+}
+.sv-ui__item--object .sv-ui__item__bodyContent {
+  grid-area: content;
+}
+.sv-ui__item--object .sv-ui__item__quietProperties {
+  grid-area: quietProps;
+}
+.sv-ui__item--object .sv-ui__item__quietActions {
+  grid-area: quietAct;
+}
+
 /*# sourceMappingURL=strawberry-vanilla-ui.css.map */

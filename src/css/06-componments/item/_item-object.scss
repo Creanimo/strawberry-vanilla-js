@@ -1,0 +1,43 @@
+@use "../../01-settings" as s;
+
+.sv-ui__item--object {
+  display: grid;
+  grid-template-areas: "mediaIdent loudProps actions"
+                      "mediaIdent loudIdent loudIdent"
+                      "mediaIdent calmIdent calmIdent"
+                      "calmProps calmProps calmProps"
+                      "content content content"
+                      "quietProps quietProps quietAct";
+  .sv-ui__item {
+    &__mediaIdentifier {
+      grid-area: mediaIdent;
+    }
+    &__loudIdentifier {
+      font-size: s.$font-size_h3;
+      font-weight: s.$font-weight_p_loud;
+      grid-area: loudIdent;
+    }
+    &__calmIdentifier {
+      font-size: s.$font-size_p_loud;
+      font-weight: s.$font-weight_p_loud;
+      grid-area: calmIdent;
+    }
+    &__actions {
+      display: flex;
+      flex-direction: row;
+      grid-area: actions;
+    }
+    &__calmProperties {
+      grid-area: calmProps;
+    }
+    &__bodyContent {
+      grid-area: content;
+    }
+    &__quietProperties {
+      grid-area: quietProps;
+    }
+    &__quietActions {
+      grid-area: quietAct;
+    }
+  }
+}

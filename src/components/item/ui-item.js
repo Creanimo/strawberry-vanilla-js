@@ -46,11 +46,12 @@ class UiItem extends UiComponent {
     constructor({
         loudIdentifier,
         calmIdentifier,
-        itemForm = "object",
+        itemStyle = "object",
         mediaIdentifier = null,
         loudProperties = null,
         calmProperties = null,
         quietProperties = null,
+        actionProperty = null,
         loudAction = null,
         calmActions = null,
         quietActions = null,
@@ -58,9 +59,16 @@ class UiItem extends UiComponent {
         label = typeof loudIdentifier === "string" ? loudIdentifier : "",
         id,
         fetchFunction = null,
+        showLoading = true,
         dependencies = dependencyInjection,
     }) {
-        super({ label, id, fetchFunction, dependencies });
+        super({
+            label,
+            id,
+            showLoading,
+            fetchFunction,
+            dependencies
+        });
 
         this.type = UiItem.type;
 
@@ -79,13 +87,14 @@ class UiItem extends UiComponent {
             loudProperties,
             calmProperties,
             quietProperties,
+            actionProperty,
             loudAction,
             calmActions,
             quietActions,
             bodyContent,
         };
 
-        this.itemForm = itemForm;
+        this.itemStyle = itemStyle;
 
         /**
          * List of permanent child components to be rendered into the template.
@@ -93,6 +102,7 @@ class UiItem extends UiComponent {
          */
         this.permanentChildren = [];
 
+        const prefix = "sv-ui__item__";
         for (const [fieldName, value] of Object.entries(this._fields)) {
             const allowed = this.constructor.allowedComponentTypes[fieldName];
 
@@ -109,9 +119,8 @@ class UiItem extends UiComponent {
                                     .join(", ")}`
                             );
                         }
-                        // All array items share the same target (the container div)
                         this.permanentChildren.push({
-                            target: fieldName,
+                            target: prefix + fieldName,
                             component: item,
                         });
                     }
@@ -128,7 +137,7 @@ class UiItem extends UiComponent {
                     );
                 }
                 this.permanentChildren.push({
-                    target: fieldName,
+                    target: prefix + fieldName,
                     component: value,
                 });
             }
@@ -145,7 +154,7 @@ class UiItem extends UiComponent {
      */
     getRenderProperties() {
         const props = super.getRenderProperties();
-        props.itemForm = this.itemForm;
+        props.itemStyle = this.itemStyle;
         for (const [fieldName, value] of Object.entries(this._fields)) {
             if (Array.isArray(value)) {
                 // If all items are components, set to empty string
