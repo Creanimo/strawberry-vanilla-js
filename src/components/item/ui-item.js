@@ -155,19 +155,27 @@ class UiItem extends UiComponent {
     getRenderProperties() {
         const props = super.getRenderProperties();
         props.itemStyle = this.itemStyle;
+
+        // Only set actions if at least one action field is present and non-empty
+        const hasActions =
+            (this._fields.actionProperty && this._fields.actionProperty !== "") ||
+            (this._fields.loudAction && this._fields.loudAction !== "") ||
+            (Array.isArray(this._fields.calmActions) && this._fields.calmActions.length > 0);
+
+        props.actions = hasActions;
+
         for (const [fieldName, value] of Object.entries(this._fields)) {
             if (Array.isArray(value)) {
-                // If all items are components, set to empty string
                 if (value.every((item) => item instanceof UiComponent)) {
-                    props[fieldName] = "";
+                    props[fieldName] = " "; // so prop is truthy
                 } else {
-                    // Otherwise, join as string (or handle as needed)
                     props[fieldName] = value.join(", ");
                 }
             } else {
-                props[fieldName] = value instanceof UiComponent ? "" : value;
+                props[fieldName] = value instanceof UiComponent ? " " : value; // so prop is truthy
             }
         }
+
         return props;
     }
 }

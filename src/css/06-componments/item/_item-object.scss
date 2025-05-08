@@ -2,15 +2,25 @@
 
 .sv-ui__item--object {
   display: grid;
-  grid-template-areas: "mediaIdent loudProps actions"
+  grid-template-areas: "mediaIdent actions actions"
+                      "mediaIdent loudProps loudProps"
                       "mediaIdent loudIdent loudIdent"
                       "mediaIdent calmIdent calmIdent"
                       "calmProps calmProps calmProps"
                       "content content content"
                       "quietProps quietProps quietAct";
+  padding-block: s.$spacing_relaxed;
+  padding-inline: s.$spacing_relaxed;
+  border: s.$lmode_border-quiet;
+  border-radius: s.$border-radius_decorative-large;
   .sv-ui__item {
     &__mediaIdentifier {
       grid-area: mediaIdent;
+      align-content: center;
+      text-align: center;
+      .sv-ui__icon {
+        font-size: s.$font-size_h1;
+      }
     }
     &__loudIdentifier {
       font-size: s.$font-size_h3;
@@ -26,6 +36,12 @@
       display: flex;
       flex-direction: row;
       grid-area: actions;
+      justify-content: flex-end;
+      align-items: center;
+      .sv-ui__item__actionProperty,
+      .sv-ui__item__calmActions {
+        margin-inline-end: s.$spacing_relaxed;
+      }
     }
     &__calmProperties {
       grid-area: calmProps;
@@ -38,6 +54,7 @@
     }
     &__quietActions {
       grid-area: quietAct;
+      justify-content: flex-end;
     }
   }
 }

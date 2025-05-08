@@ -24660,10 +24660,19 @@ input {
 
 .sv-ui__item--object {
   display: grid;
-  grid-template-areas: "mediaIdent loudProps actions" "mediaIdent loudIdent loudIdent" "mediaIdent calmIdent calmIdent" "calmProps calmProps calmProps" "content content content" "quietProps quietProps quietAct";
+  grid-template-areas: "mediaIdent actions actions" "mediaIdent loudProps loudProps" "mediaIdent loudIdent loudIdent" "mediaIdent calmIdent calmIdent" "calmProps calmProps calmProps" "content content content" "quietProps quietProps quietAct";
+  padding-block: 16px;
+  padding-inline: 16px;
+  border: 1px solid #535C77;
+  border-radius: 8px;
 }
 .sv-ui__item--object .sv-ui__item__mediaIdentifier {
   grid-area: mediaIdent;
+  align-content: center;
+  text-align: center;
+}
+.sv-ui__item--object .sv-ui__item__mediaIdentifier .sv-ui__icon {
+  font-size: 2.4rem;
 }
 .sv-ui__item--object .sv-ui__item__loudIdentifier {
   font-size: 1.8rem;
@@ -24679,6 +24688,12 @@ input {
   display: flex;
   flex-direction: row;
   grid-area: actions;
+  justify-content: flex-end;
+  align-items: center;
+}
+.sv-ui__item--object .sv-ui__item__actions .sv-ui__item__actionProperty,
+.sv-ui__item--object .sv-ui__item__actions .sv-ui__item__calmActions {
+  margin-inline-end: 16px;
 }
 .sv-ui__item--object .sv-ui__item__calmProperties {
   grid-area: calmProps;
@@ -24691,6 +24706,7 @@ input {
 }
 .sv-ui__item--object .sv-ui__item__quietActions {
   grid-area: quietAct;
+  justify-content: flex-end;
 }
 
 /*# sourceMappingURL=strawberry-vanilla-ui.css.map */

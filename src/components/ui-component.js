@@ -228,26 +228,29 @@ class UiComponent {
                 componentTemplate,
                 propCollectionToRender,
             );
-            tempNode.append(outerComponent);
             this._dependencies.log.trace(
-                { tempNode },
-                `${this.type} with ID ${this.id}: rendered tempNode.`,
+                `${this.type} with ID ${this.id}: rendered outerComponent with outer html\n${outerComponent.outerHTML}`,
+            );
+            tempNode.content.append(outerComponent);
+            this._dependencies.log.trace(
+                tempNode.content.firstElementChild,
+                `${this.type} with ID ${this.id}: rendered tempNode.content with inner html\n${Array.from(tempNode.childNodes).map(n => n.outerHTML || n.textContent).join('\n')}`,
             );
 
             if (this.permanentChildren) {
-                await this.applyChildren(tempNode, this.permanentChildren);
+                await this.applyChildren(tempNode.content.firstElementChild, this.permanentChildren);
             }
 
             if (this.dynamicChildren) {
-                await this.applyChildren(tempNode, this.dynamicChildren);
+                await this.applyChildren(tempNode.content.firstElementChild, this.dynamicChildren);
             }
 
             this._dependencies.log.trace(
-                { tempNode },
+                tempNode.content.firstElementChild,
                 `${this.type} with ID ${this.id}: Assembled rendering in temp Node`,
             );
 
-            this.componentNode = tempNode.firstChild;
+            this.componentNode = tempNode.content.firstElementChild;
 
             this.replaceOrAppendNode(
                 this.componentNode,

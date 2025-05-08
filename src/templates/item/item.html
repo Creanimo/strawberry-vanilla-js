@@ -1,15 +1,15 @@
 <div id="{{id}}" class="sv-ui__item sv-ui__item--{{itemStyle}}">
-    <div class="sv-ui__item__mediaIdentifier">{{mediaIdentifier}}</div>
-    <div class="sv-ui__item__loudIdentifier">{{loudIdentifier}}</div>
-    <div class="sv-ui__item__calmIdentifier">{{calmIdentifier}}</div>
-    <div class="sv-ui__item__actions">
+    {{#mediaIdentifier}}<div class="sv-ui__item__mediaIdentifier">{{mediaIdentifier}}</div>{{/mediaIdentifier}}
+    {{#loudIdentifier}}<div class="sv-ui__item__loudIdentifier">{{loudIdentifier}}</div>{{/loudIdentifier}}
+    {{#calmIdentifier}}<div class="sv-ui__item__calmIdentifier">{{calmIdentifier}}</div>{{/calmIdentifier}}
+    {{#actions}}<div class="sv-ui__item__actions">
         <div class="sv-ui__item__actionProperty">{{actionProperty}}</div>
         <div class="sv-ui__item__calmActions">{{calmActions}}</div>
         <div class="sv-ui__item__loudAction">{{loudAction}}</div>
-    </div>
-    <div class="sv-ui__item__loudProperties">{{loudProperties}}</div>
-    <div class="sv-ui__item__calmProperties">{{calmProperties}}</div>
-    <div class="sv-ui__item__bodyContent">{{bodyContent}}</div>
-    <div class="sv-ui__item__quietProperties">{{quietProperties}}</div>
-    <div class="sv-ui__item__quietActions">{{quietActions}}</div>
+    </div>{{/actions}}
+    {{#loudProperties}}<div class="sv-ui__item__loudProperties">{{loudProperties}}</div>{{/loudProperties}}
+    {{#calmProperties}}<div class="sv-ui__item__calmProperties">{{calmProperties}}</div>{{/calmProperties}}
+    {{#bodyContent}}<div class="sv-ui__item__bodyContent">{{bodyContent}}</div>{{/bodyContent}}
+    {{#quietProperties}}<div class="sv-ui__item__quietProperties">{{quietProperties}}</div>{{/quietProperties}}
+    {{#quietActions}}<div class="sv-ui__item__quietActions">{{quietActions}}</div>{{/quietActions}}
 </div>
