@@ -1,0 +1,20 @@
+<div class="sv-ui__input-dropdown-select" id="{{id}}">
+    <label for="{{id}}__select">{{label}}</label>
+    <select
+            id="{{id}}__select"
+            name="{{dataName}}"
+            {{#disabled}}disabled{{/disabled}}
+    aria-describedby="{{id}}__helptext"
+    >
+    {{#placeholder}}
+    <option value="" disabled selected hidden>{{placeholder}}</option>
+    {{/placeholder}}
+    {{#options}}
+    <option value="{{value}}" {{#isSelected}}selected{{/isSelected}}>{{label}}</option>
+    {{/options}}
+    </select>
+    {{#helptext}}
+    <div class="sv-ui__input__helptext" id="{{id}}__helptext">{{helptext}}</div>
+    {{/helptext}}
+    <div class="validationAlert"></div>
+</div>

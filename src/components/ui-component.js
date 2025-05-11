@@ -49,7 +49,7 @@ class UiComponent {
         this.targetNode = null;
 
         /** @type {string} */
-        this.templatePath = `${this._dependencies.getConfig.templateRoot}mytemplate.html`;
+        this.templatePath = `${this._dependencies.getConfig().templateRoot}input/dropdownSelectInput.html`;
 
         /**
          * @type {Object[] | null} permanentChildren - html ids where to place rendered child ui component(s)

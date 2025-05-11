@@ -6,6 +6,7 @@ import {
     UiButton,
     UiIcon,
     UiItem,
+    UiDropdownSelectInput,
 } from "./dist/index.esm.js";
 
 window.uiRegistry = uiRegistry;
@@ -167,5 +168,27 @@ loadConfig().then(async () => {
     });
 
     await demoItemCode.render(document.getElementById("example-item__code"));
+
+    async function exampleSelectInput() {
+        const selectInput = new UiDropdownSelectInput({
+            label: "Choose a fruit",
+            dataName: "fruit",
+            value: "banana",
+            options: [
+                { value: "apple", label: "Apple" },
+                { value: "banana", label: "Banana" },
+                { value: "cherry", label: "Cherry" },
+            ],
+            placeholder: "Select a fruit...",
+            callOnAction: (e) => {
+                console.log("Selected:", selectInput.value);
+            },
+        });
+
+        selectInput.render(document.getElementById("example-selectInput"));
+    }
+
+    exampleSelectInput();
+
 
 });
