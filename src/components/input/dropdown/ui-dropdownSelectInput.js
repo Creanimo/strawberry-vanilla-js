@@ -111,6 +111,7 @@ class UiDropdownSelectInput extends UiInput {
                 if (typeof this.callOnAction === "function") {
                     await this.callOnAction(e);
                 }
+                await this.render();
             });
         }
     }
