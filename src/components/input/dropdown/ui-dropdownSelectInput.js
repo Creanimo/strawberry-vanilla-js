@@ -58,6 +58,8 @@ class UiDropdownSelectInput extends UiInput {
 
         /** @type {boolean} */
         this.disabled = disabled;
+
+        this._dependencies.uiRegistry.register(this);
     }
 
     getRenderProperties() {
