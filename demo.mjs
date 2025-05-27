@@ -84,9 +84,9 @@ loadConfig().then(async () => {
         });
 
         const buttonCalm = new UiButton({
-            label: "Click me",
+            label: "Go to New York times",
             buttonPriority: "calm",
-            callOnAction: alertOnClick,
+            linkHref: "https://ww.nyt.com"
         });
 
         const buttonQuiet = new UiButton({

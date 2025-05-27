@@ -5,7 +5,51 @@ import ComponentTypeMap from "./component-type-map.js";
  * Base class for UI components.
  */
 class UiComponent {
+    /** @type {string} */
     static type = "sv-ui__component";
+
+    /** @type {string} @private */
+    _id;
+
+    /** @type {Object} @private */
+    _dependencies
+
+    /** @type {string} */
+    type;
+
+    /** @type {string} */
+    label;
+
+    /** @type {boolean} */
+    showLoading;
+
+    /** @type {boolean} */
+    loading;
+
+    /** @type {(() => Promise<Object>) | null} */
+    fetchFunction;
+
+    /** @type {HTMLElement | null} */
+    componentNode;
+
+    /** @type {HTMLElement | null} */
+    targetNode;
+
+    /** @type {string} */
+    templatePath;
+
+    /**
+     * @typedef {Object} ChildComponent
+     * @property {string} target - class of a div in the parent's html template
+     * @property {UiComponent} component - to place inside the div
+     */
+
+    /** @type {ChildComponent[] | null} */
+    permanentChildren;
+
+    /** @type {ChildComponent[] | null} */
+    dynamicChildren;
+
     /**
      * Creates an instance of UiComponent.
      * @param {Object} options - Configuration options for the UI component.
@@ -22,47 +66,17 @@ class UiComponent {
         fetchFunction = null,
         dependencies = dependencyInjection,
     }) {
-        /** @type {Object} */
         this._dependencies = dependencies;
-
         this.type = UiComponent.type;
-
-        /** @type {string} */
         this.id = id;
-
-        /** @type {string} */
         this.label = label;
-
-        /** @type {boolean} */
         this.showLoading = showLoading;
-
-        /** @type {boolean} */
         this.loading = null;
-
-        /** @type {(() => Promise<Object>) | null} */
         this.fetchFunction = fetchFunction;
-
-        /** @type {HTMLElement | null} */
         this.componentNode = null;
-
-        /** @type {HTMLElement | null} */
         this.targetNode = null;
-
-        /** @type {string} */
         this.templatePath = `${this._dependencies.getConfig().templateRoot}input/dropdownSelectInput.html`;
-
-        /**
-         * @type {Object[] | null} permanentChildren - html ids where to place rendered child ui component(s)
-         * @type {string} permanentChildren[].target class of a div in the parent's html template
-         * @type {UiComponent} permanentChildren[].component to place inside the div
-         */
         this.permanentChildren = [];
-
-        /**
-         * @type {Object[] | null} dynamicChildren - html ids where to place rendered child ui component(s)
-         * @type {string} dynamicChildren[].target class of a div in the parent's html template
-         * @type {UiComponent} dynamicChildren[].component to place inside the div
-         */
         this.dynamicChildren = [];
     }
 
@@ -146,13 +160,15 @@ class UiComponent {
     }
 
     /**
-     * @param {string} id
+     * @param {string} value
      */
-
     set id(value) {
         this._id = value || this._dependencies.createId();
     }
 
+    /**
+     * @return {string}
+     */
     get id() {
         return this._id;
     }

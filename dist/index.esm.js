@@ -6321,6 +6321,7 @@ class UiButton extends UiInput {
         return {
             ...super.getRenderProperties(),
             buttonPriority: this.buttonPriority,
+            linkHref: this.linkHref,
             isLink: this._isLink,
         }
     }
@@ -6394,6 +6395,8 @@ class UiDropdownSelectInput extends UiInput {
 
         /** @type {boolean} */
         this.disabled = disabled;
+
+        this._dependencies.uiRegistry.register(this);
     }
 
     getRenderProperties() {

@@ -65,6 +65,7 @@ class UiButton extends UiInput {
         return {
             ...super.getRenderProperties(),
             buttonPriority: this.buttonPriority,
+            linkHref: this.linkHref,
             isLink: this._isLink,
         }
     }
