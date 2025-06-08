@@ -12819,7 +12819,7 @@ class UiItem extends UiComponent {
             id,
             showLoading,
             fetchFunction,
-            dependencies
+            dependencies,
         });
 
         this.type = UiItem.type;
@@ -12859,16 +12859,13 @@ class UiItem extends UiComponent {
             const allowed = this.constructor.allowedComponentTypes[fieldName];
 
             if (Array.isArray(value)) {
-                value.forEach((item) => {
+                for (const item of value) {
                     if (item instanceof UiComponent) {
-                        if (
-                            allowed &&
-                            !allowed.some((Type) => item instanceof Type)
-                        ) {
+                        if (allowed && !allowed.some((Type) => item instanceof Type)) {
                             throw new Error(
                                 `Component of type ${item.constructor.name} not allowed in array field "${fieldName}". Allowed: ${allowed
                                     .map((t) => t.name)
-                                    .join(", ")}`
+                                    .join(", ")}`,
                             );
                         }
                         this.permanentChildren.push({
@@ -12876,16 +12873,13 @@ class UiItem extends UiComponent {
                             component: item,
                         });
                     }
-                });
+                }
             } else if (value instanceof UiComponent) {
-                if (
-                    allowed &&
-                    !allowed.some((Type) => value instanceof Type)
-                ) {
+                if (allowed && !allowed.some((Type) => value instanceof Type)) {
                     throw new Error(
                         `Component of type ${value.constructor.name} not allowed in field "${fieldName}". Allowed: ${allowed
                             .map((t) => t.name)
-                            .join(", ")}`
+                            .join(", ")}`,
                     );
                 }
                 this.permanentChildren.push({
@@ -12912,7 +12906,8 @@ class UiItem extends UiComponent {
         const hasActions =
             (this._fields.actionProperty && this._fields.actionProperty !== "") ||
             (this._fields.loudAction && this._fields.loudAction !== "") ||
-            (Array.isArray(this._fields.calmActions) && this._fields.calmActions.length > 0);
+            (Array.isArray(this._fields.calmActions) &&
+                this._fields.calmActions.length > 0);
 
         props.actions = hasActions;
 

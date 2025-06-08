@@ -4,12 +4,10 @@ html {
   font-size: 100%;
 }
 
-body {
+body, input, button, select {
   font-family: "Alegreya Sans", sans-serif;
   font-weight: s.$font-weight_p_quiet;
   font-style: normal;
   font-size: s.$font-size_p_quiet;
   color: s.$lmode_text-p-color;
 }
-
-

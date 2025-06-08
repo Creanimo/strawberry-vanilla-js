@@ -1,7 +1,7 @@
 @use "../01-settings" as s;
 @use "../04-layout/spacings" as l-sp;
 
-input {
+input, select {
   padding: l-sp.$padding_tight;
   min-height: s.$input_min-height;
 }
