@@ -4,4 +4,5 @@ export { default as UiDropdownSelectInput  } from "./input/dropdown/ui-dropdownS
 export { default as UiCodeBlock } from "./code/ui-codeblock.js";
 export { default as UiIcon } from "./icon/ui-icon.js";
 export { default as UiItem } from "./item/ui-item.js";
+export { default as UiMarkdown } from "./markdown/ui-markdown.js";
 

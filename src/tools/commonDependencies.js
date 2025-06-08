@@ -6,6 +6,7 @@ import ValidationService from "./validationService.js";
 import uiRegistry from "./UiRegistry.js";
 import ComponentTypeMap from "../components/component-type-map.js";
 import { deserializeComponent, serializeComponent } from "./componentSerializer.js";
+import { markdownRenderer } from "./markdownRenderer.js";
 
 class Dependencies {
     constructor() {
@@ -20,6 +21,7 @@ class Dependencies {
         this.ComponentTypeMap = ComponentTypeMap;
         this.serializeComponent = serializeComponent;
         this.deserializeComponent = deserializeComponent;
+        this.markdownRenderer = markdownRenderer;
     }
 }
 

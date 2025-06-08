@@ -7,6 +7,7 @@ import {
     UiIcon,
     UiItem,
     UiDropdownSelectInput,
+    UiMarkdown,
 } from "./dist/index.esm.js";
 
 window.uiRegistry = uiRegistry;
@@ -180,7 +181,7 @@ loadConfig().then(async () => {
                 { value: "cherry", label: "Cherry" },
             ],
             placeholder: "Select a fruit...",
-            callOnAction: (e) => {
+            callOnAction: () => {
                 console.log("Selected:", selectInput.value);
             },
         });
@@ -188,7 +189,32 @@ loadConfig().then(async () => {
         selectInput.render(document.getElementById("example-selectInput"));
     }
 
-    exampleSelectInput();
+    await exampleSelectInput();
 
+    const demoSelectInputCode = new UiCodeBlock({
+        label: "Code of SelectInput Example",
+        code: String(exampleSelectInput),
+        language: "javascript",
+    });
 
+    await demoSelectInputCode.render(document.getElementById("example-select__code"));
+
+    async function exampleMarkdown() {
+        const markdownInput = "# Headline 1\nThis is a paragraph with some **bold** text."
+        const markdown = new UiMarkdown({
+            markdown: markdownInput
+        })
+
+        await markdown.render(document.getElementById("example-markdown"));
+    }
+
+    await exampleMarkdown();
+
+    const demoMarkdownCode = new UiCodeBlock({
+        label: "Code of Markdown",
+        code: String(exampleMarkdown),
+        language: "javascript",
+    });
+
+    await demoMarkdownCode.render(document.getElementById("example-markdown__code"));
 });
