@@ -197,7 +197,7 @@ loadConfig().then(async () => {
         language: "javascript",
     });
 
-    await demoSelectInputCode.render(document.getElementById("example-select__code"));
+    await demoSelectInputCode.render(document.getElementById("example-selectInput__code"));
 
     async function exampleMarkdown() {
         const markdownInput = "# Headline 1\nThis is a paragraph with some **bold** text."
